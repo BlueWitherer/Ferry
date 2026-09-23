@@ -14,13 +14,14 @@
     ],
     "description": "Sync your game client settings!",
     "links": {
-        "source": "https://github.com/Cheeseworks/Ferry",
+        "source": "https://github.com/BlueWitherer/Ferry",
         "homepage": "https://www.cheeseworks.gay/",
         "community": "https://www.dsc.gg/cheeseworks"
     },
     "tags": [
         "online",
-        "utility"
+        "utility",
+        "enhancement"
     ],
     "dependencies": {
         "geode.node-ids": ">=1.22.0"
