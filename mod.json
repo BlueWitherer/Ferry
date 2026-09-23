@@ -1,0 +1,42 @@
+{
+    "geode": "5.10.0",
+    "gd": {
+        "win": "2.2081",
+        "android": "2.2081",
+        "mac": "2.2081",
+        "ios": "2.2081"
+    },
+    "id": "cheeseworks.ferry",
+    "name": "Ferry",
+    "version": "1.0.0-beta.1",
+    "developers": [
+        "Cheeseworks"
+    ],
+    "description": "Sync your game client settings!",
+    "links": {
+        "source": "https://github.com/Cheeseworks/Ferry",
+        "homepage": "https://www.cheeseworks.gay/",
+        "community": "https://www.dsc.gg/cheeseworks"
+    },
+    "tags": [
+        "online",
+        "utility"
+    ],
+    "dependencies": {
+        "geode.node-ids": ">=1.22.0"
+    },
+    "api": {
+        "include": [
+            "include/*.hpp"
+        ]
+    },
+    "settings": {
+        "gay": {
+            "type": "bool",
+            "name": "gay",
+            "description": "are you gay",
+            "default": true
+        }
+    },
+    "early-load": false
+}
