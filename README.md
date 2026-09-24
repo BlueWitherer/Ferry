@@ -26,7 +26,7 @@ Sometimes, you might find yourself starting over on a new GD installation, meani
 ---
 
 ### Credits
-- **[dankmeme](https://www.github.com/dankmeme01/)**: Meaningful guidance to implement this mod
+- **[dankmeme](https://www.github.com/dankmeme01/)**: Meaningful guidance for this mod's implementation
 
 ---
 

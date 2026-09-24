@@ -15,12 +15,12 @@ This mod allows you to **save your game settings to a cloud service**, so you ca
 ---
 
 ### Why?
-Sometimes, you might find yourself <cy>starting over on a new GD installation</c>, meaning all your data is <cr>gone</c>, including <cg>your game settings which you've gotten accustomed to</c>. However, unlike with account stats, <cr>Geometry Dash won't let you sync your game settings across clients or devices</c>. **This mod provides a solution for that**.
+Sometimes, you might find yourself <cy>starting over on a new GD installation</c>, meaning all your data is <cr>gone</c>, including <cg>your game settings which you've gotten accustomed to</c>. However, unlike with account stats, <cr>Geometry Dash normally won't let you sync your game settings across clients or devices</c>. **This mod provides a solution for that**.
 
 ---
 
 ### Credits
-- **[dankmeme](user:9735891)**: Meaningful guidance to implement this mod
+- **[dankmeme](user:9735891)**: Meaningful guidance for this mod's implementation
 
 ---
 

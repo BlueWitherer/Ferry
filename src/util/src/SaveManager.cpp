@@ -95,7 +95,7 @@ arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
     GEODE_CO_UNWRAP_INTO(size_t size, br.readU64());
 
     log::debug("Received {} game variables", size);
-    if (size <= 0 || size >= MAXUINT64) co_return Err("Map stream has invalid size");
+    if (size <= 0) co_return Err("Map stream has invalid size");
 
     StringMap<bool> vars;
     vars.reserve(size);
