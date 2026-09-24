@@ -5,6 +5,7 @@
 #include <dbuf/ByteReader.hpp>
 #include <dbuf/ByteWriter.hpp>
 
+#include <ui/Include.h>
 #include <util/Include.h>
 
 #include <Geode/Geode.hpp>

@@ -8,13 +8,15 @@ using namespace geode::prelude;
 using namespace cw::ferry;
 
 arc::Future<WebRes> SaveManager::uploadGameVars() {
+    m_ongoing = true;
+
     auto tokenRes = co_await argon::startAuth();
     if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402);
 
     auto token = std::move(tokenRes).unwrap();
 
-    auto const acc = *co_await async::waitForMainThread<argon::AccountData>([]() {
-        return argon::getGameAccountData();
+    auto const accountID = *co_await async::waitForMainThread<int>([]() {
+        return GJAccountManager::sharedState()->m_accountID;
     });
 
     auto vars = *co_await async::waitForMainThread<StringMap<bool>>([]() {
@@ -43,7 +45,7 @@ arc::Future<WebRes> SaveManager::uploadGameVars() {
 
     auto res = co_await request::base()
                    .body(bw.writtenVec())
-                   .param("account_id", acc.accountId)
+                   .param("account_id", accountID)
                    .param("authtoken", std::move(token))
                    .onProgress([](web::WebProgress const& prog) {
                        auto val = prog.uploadProgress();
@@ -61,18 +63,21 @@ arc::Future<WebRes> SaveManager::uploadGameVars() {
         });
     };
 
+    m_ongoing = false;
     co_return webResp;
 };
 
 arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
+    m_ongoing = true;
+
     GEODE_CO_UNWRAP_INTO(std::string token, co_await argon::startAuth());
 
-    auto const acc = *co_await async::waitForMainThread<argon::AccountData>([]() {
-        return argon::getGameAccountData();
+    auto const accountID = *co_await async::waitForMainThread<int>([]() {
+        return GJAccountManager::sharedState()->m_accountID;
     });
 
     auto res = co_await request::base()
-                   .param("account_id", acc.accountId)
+                   .param("account_id", accountID)
                    .param("authtoken", std::move(token))
                    .onProgress([](web::WebProgress const& prog) {
                        auto val = prog.downloadProgress();
@@ -102,5 +107,10 @@ arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
         vars[std::move(key)] = val;
     };
 
+    m_ongoing = false;
     co_return Ok(vars);
+};
+
+bool SaveManager::isOngoing() const noexcept {
+    return m_ongoing;
 };
