@@ -13,5 +13,10 @@ namespace cw::ferry {
 
     public:
         arc::Future<WebRes> uploadGameVars();
+        arc::Future<geode::Result<geode::utils::StringMap<bool>>> downloadGameVars();
+    };
+
+    struct ProgressEvent final : geode::Event<ProgressEvent, bool(float)> {
+        using Event::Event;
     };
 };

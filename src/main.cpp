@@ -24,10 +24,32 @@ class $modify(MyMenuLayer, MenuLayer) {
             menu->updateLayout();
         };
 
+        addEventListener(
+            ProgressEvent(),
+            [](float progress) {
+                log::trace("download {}%", progress);
+            });
+
         return true;
     };
 
     void onMyButton(CCObject*) {
-        async::spawn(SaveManager::get()->uploadGameVars());
+        async::spawn(
+            SaveManager::get()->downloadGameVars(),
+            [](Result<StringMap<bool>> res) {
+                if (res.isErr()) return log::error("Failed to download variables: {}", res.unwrapErr());
+                auto vars = std::move(res).unwrap();
+
+                auto gm = GameManager::sharedState();
+                for (auto const& [key, val] : vars) {
+                    if (key.size() != 4) {
+                        log::error("Key {} is not valid", key);
+                        continue;
+                    };
+
+                    log::trace("Setting game variable {} to {}...", key, val);
+                    gm->setGameVariable(key.c_str(), val);
+                };
+            });
     };
 };
