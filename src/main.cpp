@@ -15,7 +15,11 @@ class $modify(MyMenuLayer, MenuLayer) {
 
         if (auto menu = getChildByID("bottom-menu")) {
             auto myButton = CCMenuItemSpriteExtra::create(
-                CCSprite::createWithSpriteFrameName("GJ_duplicateBtn_001.png"),
+                CircleButtonSprite::createWithSprite(
+                    "icon.png"_spr,
+                    0.95f,
+                    CircleBaseColor::Green,
+                    CircleBaseSize::MediumAlt),
                 this,
                 menu_selector(MyMenuLayer::onMyButton));
             myButton->setID("gay-btn"_spr);

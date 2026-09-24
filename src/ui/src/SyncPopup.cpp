@@ -25,7 +25,7 @@ namespace cw::ferry {
 };
 
 bool SyncPopup::init() {
-    if (!Popup::init({300.f, 200.f})) return false;
+    if (!Popup::init({250.f, 135.f})) return false;
 
     setID("sync-popup"_spr);
     setTitle("Ferry Save Manager");
@@ -67,21 +67,99 @@ bool SyncPopup::init() {
 
     m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-12.5f, -12.5f}, false);
 
+    auto btns = std::to_array<SaveButtonData>(
+        {
+            {
+                "upload-btn",
+                "Upload Settings",
+                "GJ_sRecentIcon_001.png",
+                "GJ_button_03.png",
+                [this](auto) {
+                    startUploadTask(nullptr);
+                },
+            },
+            {
+                "download-btn",
+                "Download Settings",
+                "GJ_sDownloadIcon_001.png",
+                "GJ_button_01.png",
+                [this](auto) {
+                    startDownloadTask(nullptr);
+                },
+            },
+        });
+
+    auto menuLayout = ColumnLayout::create()
+                          ->setGap(7.5f)
+                          ->setAutoScale(false)
+                          ->setAutoGrowAxis(10.f)
+                          ->setAxisReverse(true);
+
+    auto menu = CCNode::create();
+    menu->setID("btn-container");
+    menu->setAnchorPoint({0.5, 0.5});
+    menu->setContentSize({65.f, 65.f});
+    menu->setLayout(menuLayout);
+
+    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, -8.75f}, false);
+
+    for (auto& b : btns) {
+        auto btnSprsLayout = RowLayout::create()
+                                 ->setGap(2.5f)
+                                 ->setAutoScale(false)
+                                 ->setAutoGrowAxis(65.f);
+
+        auto btnSprs = CCNode::create();
+        btnSprs->setAnchorPoint({0.5, 0.5});
+        btnSprs->setContentSize({65.f, 65.f});
+        btnSprs->setLayout(btnSprsLayout);
+
+        auto btnSprIcon = CCSprite::createWithSpriteFrameName(b.icon.c_str());
+        btnSprIcon->setScale(0.75f);
+
+        auto btnSprLabel = Label::create(std::move(b.text), "bigFont.fnt");
+        btnSprLabel->setScale(0.475f);
+        btnSprLabel->setAlignment(Label::Alignment::Center);
+
+        btnSprs->addChild(btnSprIcon);
+        btnSprs->addChild(btnSprLabel);
+
+        btnSprs->updateLayout();
+
+        auto btnSpr = NineSlice::create(b.background);
+        btnSpr->setContentSize({btnSprs->getScaledContentWidth() + 10.f, btnSprs->getScaledContentHeight() + 12.5f});
+
+        btnSpr->addChildAtPosition(btnSprs, Anchor::Center);
+
+        auto btn = Button::createWithNode(
+            btnSpr,
+            std::move(b.callback));
+        btn->setID(std::move(b.id));
+        btn->setScale(0.875f);
+
+        menu->addChild(btn);
+    };
+
+    menu->updateLayout();
+
     return true;
 };
 
 void SyncPopup::startUploadTask(Callback&& cb) {
+    m_inProgress = true;
     m_downloadTask.cancel();
 
     util::removeOptionsLayer();
     util::resetNode(m_progressPopup);
 
-    m_progressPopup = UploadActionPopup::create(nullptr, "Uploading settings data...");
+    m_progressPopup = UploadActionPopup::create(this, "Uploading settings data...");
     m_progressPopup->show();
 
     m_uploadTask.spawn(
         SaveManager::get()->uploadGameVars(),
         [this](WebRes res) {
+            m_inProgress = false;
+
             if (res.isOk()) {
                 m_progressPopup->showSuccessMessage("Data saved to cloud!");
             } else {
@@ -92,19 +170,22 @@ void SyncPopup::startUploadTask(Callback&& cb) {
 };
 
 void SyncPopup::startDownloadTask(Callback&& cb) {
+    m_inProgress = true;
     m_uploadTask.cancel();
 
     util::removeOptionsLayer();
     util::resetNode(m_progressPopup);
 
-    m_progressPopup = UploadActionPopup::create(nullptr, "Downloading settings data...");
+    m_progressPopup = UploadActionPopup::create(this, "Downloading settings data...");
     m_progressPopup->show();
 
     m_downloadTask.spawn(
         SaveManager::get()->downloadGameVars(),
         [this](Result<StringMap<bool>> res) {
             auto const fallback = [this](std::string_view err) {
+                m_inProgress = false;
                 m_progressPopup->showFailMessage("Data save failed.");
+
                 log::error("Couldn't apply settings data: {}", err);
             };
 
@@ -122,8 +203,21 @@ void SyncPopup::startDownloadTask(Callback&& cb) {
                 gm->setGameVariable(key.c_str(), val);
             };
 
+            m_inProgress = false;
             m_progressPopup->showSuccessMessage("Data synced!");
         });
+};
+
+void SyncPopup::onClosePopup(UploadActionPopup* popup) {
+    if (!popup->m_succeeded) {
+        m_uploadTask.cancel();
+        m_downloadTask.cancel();
+
+        if (m_inProgress) Notification::create("Task cancelled", NotificationIcon::Error)->show();
+    };
+
+    util::resetNode(m_progressPopup);
+    m_inProgress = false;
 };
 
 void SyncPopup::onExit() {

@@ -8,8 +8,6 @@ using namespace geode::prelude;
 using namespace cw::ferry;
 
 arc::Future<WebRes> SaveManager::uploadGameVars() {
-    m_ongoing = true;
-
     auto tokenRes = co_await argon::startAuth();
     if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402);
 
@@ -63,13 +61,10 @@ arc::Future<WebRes> SaveManager::uploadGameVars() {
         });
     };
 
-    m_ongoing = false;
     co_return webResp;
 };
 
 arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
-    m_ongoing = true;
-
     GEODE_CO_UNWRAP_INTO(std::string token, co_await argon::startAuth());
 
     auto const accountID = *co_await async::waitForMainThread<int>([]() {
@@ -87,8 +82,10 @@ arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
                    })
                    .get("http://localhost:6767/api/v1/download");  // still testing, ferry.cheeseworks.gay soon!
 
-    auto webResp = webres::processResp(res);
-    if (res.error() || webResp.isErr()) co_return Err("{}: {}", webResp.getCode(), webResp.getError());
+    if (res.error()) {
+        auto const webResp = webres::processResp(res);
+        co_return Err("{}: {}", webResp.getCode(), webResp.getError());
+    };
 
     dbuf::ByteReader br{res.data()};
 
@@ -107,10 +104,5 @@ arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
         vars[std::move(key)] = val;
     };
 
-    m_ongoing = false;
     co_return Ok(vars);
-};
-
-bool SaveManager::isOngoing() const noexcept {
-    return m_ongoing;
 };
