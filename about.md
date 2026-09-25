@@ -17,6 +17,8 @@ This mod allows you to **save your GD settings to a cloud service**, so you can 
 ### Syncing
 A <cg>*![Ferry](cheeseworks.ferry/icon.png?scale=0.325)* button</c> will appear on the main menu, which will <cy>open a pop-up when you press it</c>. You can either <cy>upload or download your settings</c> to and from the Ferry cloud server. Either option <cr>will **overwrite** previous data</c>.
 
+> ![ℹ️](frame:GJ_infoIcon_001.png?scale=0.5) <cj>*More options for sync such as Geode mod settings are planned in future updates!*</c>
+
 ### Why?
 Sometimes, you might find yourself <cy>starting over on a new GD installation</c>, meaning all your data is <cr>gone</c>, including <cg>your game settings which you've gotten accustomed to</c>. However, unlike with account stats, <cr>Geometry Dash normally won't let you sync your game settings across clients or devices</c>. **This mod provides a solution for that**.
 
