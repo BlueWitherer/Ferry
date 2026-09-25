@@ -37,10 +37,16 @@
         ]
     },
     "settings": {
-        "gay": {
+        "also-upload": {
             "type": "bool",
-            "name": "gay",
-            "description": "are you gay",
+            "name": "Sync to Cloud when Syncing Account",
+            "description": "Trigger the setting data upload process simulatneously when syncing your Geometry Dash account data to the cloud.",
+            "default": true
+        },
+        "also-download": {
+            "type": "bool",
+            "name": "Load to Game when Loading Account",
+            "description": "Trigger the setting data download process simulatneously when loading your Geometry Dash account data from the cloud.",
             "default": true
         }
     },

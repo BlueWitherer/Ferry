@@ -3,6 +3,8 @@
 
 *by [Cheeseworks](user:6408873)!*
 
+> ![✳️](frame:collaborationIcon_001.png) <cg>*This mod has settings you can utilize to customize your experience.*</c>
+
 ---
 
 ## About

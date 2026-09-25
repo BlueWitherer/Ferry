@@ -85,3 +85,16 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
 
     co_return Ok(vars);
 };
+
+void save::applyGameVars(StringMap<bool> const& vars) {
+    auto gm = GameManager::sharedState();
+    for (auto const& [key, val] : vars) {
+        if (key.size() != 4) {
+            log::error("Key {} is not valid", key);
+            continue;
+        };
+
+        log::trace("Setting game variable {} to {}...", key, val);
+        gm->setGameVariable(key.c_str(), val);
+    };
+};

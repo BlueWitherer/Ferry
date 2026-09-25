@@ -7,6 +7,9 @@ Sync your game client settings!
 >  
 > [<img alt="Downloads" src="https://img.shields.io/github/downloads/BlueWitherer/Ferry/total?style=for-the-badge&logo=geode&logoColor=ffffff&label=Downloads">](https://geode-sdk.org/mods/cheeseworks.ferry)
 
+> [!TIP]
+> *This mod has settings you can utilize to customize your experience.*
+
 ---
 
 ## About

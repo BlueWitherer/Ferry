@@ -245,18 +245,8 @@ void SyncPopup::startDownloadTask() {
             };
 
             if (res.isErr()) return fallback(res.unwrapErr());
-            auto vars = std::move(res).unwrap();
 
-            auto gm = GameManager::sharedState();
-            for (auto const& [key, val] : vars) {
-                if (key.size() != 4) {
-                    log::error("Key {} is not valid", key);
-                    continue;
-                };
-
-                log::trace("Setting game variable {} to {}...", key, val);
-                gm->setGameVariable(key.c_str(), val);
-            };
+            save::applyGameVars(res.unwrap());
 
             m_inProgress = false;
             m_progressPopup->showSuccessMessage("Data loaded!");
