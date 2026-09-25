@@ -32,26 +32,55 @@ bool SyncPopup::init() {
     setID("sync-popup"_spr);
     setTitle("Ferry");
 
-    addSideArt(m_mainLayer, SideArt::All, SideArtStyle::PopupBlue);
+    auto linkBtnMenuLayout = ColumnLayout::create()
+                                 ->setGap(2.5f)
+                                 ->setAutoScale(false)
+                                 ->setAutoGrowAxis(0.f);
 
-    auto discordBtn = Button::createWithSpriteFrameName(
-        "gj_discordIcon_001.png",
-        [](auto) {
-            createQuickPopup(
-                "Discord Community",
-                "Join <cd>Cheeseworks</c>'s <cb>Discord server</c>?\n"
-                "<cs>Get help, report bugs, and chat with other players!</c>",
-                "Cancel",
-                "OK",
-                [](auto, bool ok) {
-                    if (ok) web::openLinkInBrowser("https://www.dsc.gg/cheeseworks");
-                });
-        });
-    discordBtn->setID("discord-btn");
-    discordBtn->setScale(0.75f);
-    discordBtn->setZOrder(1);
+    auto linkBtnMenu = CCNode::create();
+    linkBtnMenu->setID("link-container");
+    linkBtnMenu->setContentSize({12.5f, 1.25f});
+    linkBtnMenu->setZOrder(1);
+    linkBtnMenu->setLayout(linkBtnMenuLayout);
 
-    m_mainLayer->addChildAtPosition(discordBtn, Anchor::BottomLeft, {15.f, 15.f});
+    m_mainLayer->addChildAtPosition(linkBtnMenu, Anchor::BottomLeft, {5.f, 5.f});
+
+    auto linkBtns = std::array{
+        LinkButton{
+            "discord-btn",
+            "gj_discordIcon_001.png",
+            [](auto) {
+                createQuickPopup(
+                    "Discord Community",
+                    "Join <cd>Cheeseworks</c>'s <cb>Discord server</c>?\n"
+                    "<cs>Get help, report bugs, and chat with other players!</c>",
+                    "Cancel",
+                    "OK",
+                    [](auto, bool ok) {
+                        if (ok) web::openLinkInBrowser("https://www.dsc.gg/cheeseworks");
+                    });
+            },
+        },
+        LinkButton{
+            "support-me-btn",
+            "geode.loader/gift.png",
+            [](auto) {
+                openSupportPopup(Mod::get());
+            },
+        },
+    };
+
+    for (auto& linkBtn : linkBtns) {
+        auto b = Button::createWithSpriteFrameName(
+            linkBtn.sprite,
+            std::move(linkBtn.callback));
+        b->setID(std::move(linkBtn.id));
+        b->setScale(0.75f);
+
+        linkBtnMenu->addChild(b);
+    };
+
+    linkBtnMenu->updateLayout();
 
     auto infoBtn = Button::createWithSpriteFrameName(
         "GJ_infoIcon_001.png",
@@ -67,7 +96,7 @@ bool SyncPopup::init() {
     infoBtn->setScale(0.75f);
     infoBtn->setZOrder(9);
 
-    m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-12.5f, -12.5f});
+    m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-15.f, -15.f});
 
     auto modBtn = Button::createWithNode(
         CircleButtonSprite::createWithSprite(
@@ -79,48 +108,10 @@ bool SyncPopup::init() {
     modBtn->setID("mod-settings-btn");
     modBtn->setScale(0.625f);
 
-    m_mainLayer->addChildAtPosition(modBtn, Anchor::BottomRight, {-17.5, 17.5f});
-
-    auto btns = std::to_array<SaveButtonData>(
-        {
-            {
-                "upload-btn",
-                "Sync to Cloud",
-                "GJ_sRecentIcon_001.png",
-                "GJ_button_03.png",
-                [this](auto) {
-                    createQuickPopup(
-                        "Upload Data",
-                        "Sync current settings <cy>with the cloud</c>?\n"
-                        "<cr>Currently saved data will be overriden</c>.",
-                        "Cancel",
-                        "Yes",
-                        [this](auto, bool ok) {
-                            if (ok) startUploadTask();
-                        });
-                },
-            },
-            {
-                "download-btn",
-                "Load to Game",
-                "GJ_sDownloadIcon_001.png",
-                "GJ_button_01.png",
-                [this](auto) {
-                    createQuickPopup(
-                        "Download Data",
-                        "Sync cloud-saved settings <cg>to your game</c>?\n"
-                        "<cr>Current game settings will be overriden</c>.",
-                        "Cancel",
-                        "Yes",
-                        [this](auto, bool ok) {
-                            if (ok) startDownloadTask();
-                        });
-                },
-            },
-        });
+    m_mainLayer->addChildAtPosition(modBtn, Anchor::BottomRight, {-20.f, 20.f});
 
     auto menuLayout = ColumnLayout::create()
-                          ->setGap(7.5f)
+                          ->setGap(6.25f)
                           ->setAutoScale(false)
                           ->setAutoGrowAxis(10.f)
                           ->setAxisReverse(true);
@@ -132,6 +123,43 @@ bool SyncPopup::init() {
     menu->setLayout(menuLayout);
 
     m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, -10.f});
+
+    auto btns = std::array{
+        SaveButtonData{
+            "upload-btn",
+            "Sync to Cloud",
+            "GJ_sRecentIcon_001.png",
+            "GJ_button_03.png",
+            [this](auto) {
+                createQuickPopup(
+                    "Upload Data",
+                    "Sync current settings <cy>with the cloud</c>?\n"
+                    "<cr>Currently saved data will be overriden</c>.",
+                    "Cancel",
+                    "Yes",
+                    [this](auto, bool ok) {
+                        if (ok) startUploadTask();
+                    });
+            },
+        },
+        SaveButtonData{
+            "download-btn",
+            "Load to Game",
+            "GJ_sDownloadIcon_001.png",
+            "GJ_button_01.png",
+            [this](auto) {
+                createQuickPopup(
+                    "Download Data",
+                    "Sync cloud-saved settings <cg>to your game</c>?\n"
+                    "<cr>Current game settings will be overriden</c>.",
+                    "Cancel",
+                    "Yes",
+                    [this](auto, bool ok) {
+                        if (ok) startDownloadTask();
+                    });
+            },
+        },
+    };
 
     for (auto& b : btns) {
         auto btnSprsLayout = RowLayout::create()

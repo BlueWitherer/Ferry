@@ -14,6 +14,12 @@ namespace cw::ferry {
             geode::Button::ButtonCallback callback;
         };
 
+        struct LinkButton final {
+            std::string id;
+            std::string sprite;
+            geode::Button::ButtonCallback callback;
+        };
+
     private:
         bool m_inProgress = false;
         geode::Ref<UploadActionPopup> m_progressPopup = nullptr;

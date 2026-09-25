@@ -21,13 +21,19 @@ arc::Future<WebRes> save::uploadGameVars() {
         StringMap<bool> vars;
 
         auto gm = GameManager::sharedState();
-        log::debug("Iterating through {} variables...", vars::all.size());
+        auto dict = gm->m_valueKeeper->asExt();
 
-        for (auto const& key : vars::all) {
-            vars[key] = gm->getGameVariable(key);
+        log::trace("Iterating through {} variables...", dict.size());
+
+        for (auto const& [key, v] : dict) {
+            if (str::startsWith(key, "gv_0")) {
+                auto const k = str::filter(key, "0123456789");
+                log::trace("Parsing game variable {}...", k);
+                vars[k] = gm->getGameVariable(k.c_str());
+            };
         };
 
-        log::trace("{}", vars);
+        log::debug("Parsed {} variables", vars.size());
         return vars;
     });
 
