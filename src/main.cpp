@@ -21,7 +21,7 @@ class $modify(FerryMenuLayer, MenuLayer) {
                     CircleBaseColor::Green,
                     CircleBaseSize::MediumAlt),
                 [](auto) {
-                    if (GJAccountManager::sharedState()->m_accountID <= 0) {
+                    if (!argon::signedIn()) {
                         AccountLayer::create()->showLayer(GameManager::sharedState()->getGameVariable(GameVar::FastMenu));
                         Notification::create("(Ferry) You must be logged in to use Ferry!", NotificationIcon::Warning)->show();
 
