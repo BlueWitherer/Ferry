@@ -23,11 +23,17 @@ This mod allows you to **save your GD settings to a cloud service**, so you can 
 ### Syncing
 A *<img src="resources/icon.png" width="15" alt="Ferry">* button will appear on the main menu, which will open a pop-up when you press it. You can either upload or download your settings to and from the Ferry cloud server. Either option will **overwrite** previous data.
 
-> [!NOTE]
-> *More options for sync such as Geode mod settings are planned in future updates!*
+> [!TIP]
+> *Synced data also includes editor settings!*
+
+#### Seamless Sync
+You can automatically trigger Ferry's sync processes when syncing your account through Geometry Dash. In the mod settings, you can choose if you want cloud sync to automatically start at the same time you either save or load your GD account's data.
 
 ### Why?
 Sometimes, you might find yourself starting over on a new GD installation, meaning all your data is gone, including your game settings which you've gotten accustomed to. However, unlike with account stats, Geometry Dash won't let you sync your game settings across clients or devices. **This mod provides a solution for that**.
+
+> [!NOTE]
+> *More options for sync such as Geode mod settings are planned in future updates!*
 
 ---
 
