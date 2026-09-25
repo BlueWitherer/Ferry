@@ -74,9 +74,9 @@ bool SyncPopup::init() {
             "icon.png"_spr,
             0.925f),
         [](auto) {
-            openInfoPopup(Mod::get());
+            openSettingsPopup(Mod::get());
         });
-    modBtn->setID("mod-info-btn");
+    modBtn->setID("mod-settings-btn");
     modBtn->setScale(0.625f);
 
     m_mainLayer->addChildAtPosition(modBtn, Anchor::BottomRight, {-17.5, 17.5f});
