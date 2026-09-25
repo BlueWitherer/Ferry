@@ -43,6 +43,7 @@ Sometimes, you might find yourself starting over on a new GD installation, meani
 ---
 
 ![preview](previews/preview-1.png)
+![preview](previews/preview-2.png)
 
 ---
 
