@@ -6,8 +6,6 @@
 
 namespace cw::ferry {
     class SyncPopup final : public geode::Popup, public UploadPopupDelegate {
-        using Callback = geode::CopyableFunction<void(WebRes)>;
-
         struct SaveButtonData final {
             std::string id;
             std::string text;
@@ -24,8 +22,8 @@ namespace cw::ferry {
         geode::async::TaskHolder<geode::Result<geode::utils::StringMap<bool>>> m_downloadTask;
 
     protected:
-        void startUploadTask(Callback&& cb);
-        void startDownloadTask(Callback&& cb);
+        void startUploadTask();
+        void startDownloadTask();
 
         void onClosePopup(UploadActionPopup* popup) override;
 

@@ -7,18 +7,18 @@ Sync your game client settings!
 >  
 > [<img alt="Downloads" src="https://img.shields.io/github/downloads/BlueWitherer/Ferry/total?style=for-the-badge&logo=geode&logoColor=ffffff&label=Downloads">](https://geode-sdk.org/mods/cheeseworks.ferry)
 
-> [!WARNING]
-> *This mod is currently in a **partial release state**, everything is subject to change in future updates!*
-
 ---
 
 ## About
-This mod allows you to **save your game settings to a cloud service**, so you can synchronize them across multiple devices!
+This mod allows you to **save your GD settings to a cloud service**, so you can synchronize them across multiple devices!
 
 > [!NOTE]
 > *This is an **online** mod. **Check [status.cheeseworks.gay](https://status.cheeseworks.gay/)** before reporting any connectivity issues!*
 
 ---
+
+### Syncing
+A *<img src="resources/icon.png" width="15" alt="Ferry">* button will appear on the main menu, which will open a pop-up when you press it. You can either upload or download your settings to and from the Ferry cloud server. Either option will **overwrite** previous data.
 
 ### Why?
 Sometimes, you might find yourself starting over on a new GD installation, meaning all your data is gone, including your game settings which you've gotten accustomed to. However, unlike with account stats, Geometry Dash won't let you sync your game settings across clients or devices. **This mod provides a solution for that**.
@@ -31,7 +31,6 @@ Sometimes, you might find yourself starting over on a new GD installation, meani
 ---
 
 ![preview](previews/preview-1.png)
-![preview](previews/preview-2.png)
 
 ---
 

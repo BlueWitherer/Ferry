@@ -4,6 +4,8 @@
 
 #include <Geode/Geode.hpp>
 
+#include <Geode/ui/GeodeUI.hpp>
+
 using namespace geode::prelude;
 using namespace cw::ferry;
 
@@ -25,12 +27,12 @@ namespace cw::ferry {
 };
 
 bool SyncPopup::init() {
-    if (!Popup::init({250.f, 135.f})) return false;
+    if (!Popup::init({240.f, 150.f})) return false;
 
     setID("sync-popup"_spr);
-    setTitle("Ferry Save Manager");
+    setTitle("Ferry");
 
-    addSideArt(m_mainLayer, SideArt::All, SideArtStyle::PopupGold);
+    addSideArt(m_mainLayer, SideArt::All, SideArtStyle::PopupBlue);
 
     auto discordBtn = Button::createWithSpriteFrameName(
         "gj_discordIcon_001.png",
@@ -49,14 +51,14 @@ bool SyncPopup::init() {
     discordBtn->setScale(0.75f);
     discordBtn->setZOrder(1);
 
-    m_mainLayer->addChildAtPosition(discordBtn, Anchor::BottomLeft, {15.f, 15.f}, false);
+    m_mainLayer->addChildAtPosition(discordBtn, Anchor::BottomLeft, {15.f, 15.f});
 
     auto infoBtn = Button::createWithSpriteFrameName(
         "GJ_infoIcon_001.png",
         [](auto) {
             createQuickPopup(
                 "Help",
-                "This is the <cg>Data Sync Pop-up</c>. Here, you can <cy>upload and download the game settings linked to your Geometry Dash account</c>.",
+                "This is the <cg>Ferry Sync Menu</c>. Here, you can <cy>upload and download the game settings linked to your Geometry Dash account</c>.",
                 "OK",
                 nullptr,
                 nullptr);
@@ -65,26 +67,54 @@ bool SyncPopup::init() {
     infoBtn->setScale(0.75f);
     infoBtn->setZOrder(9);
 
-    m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-12.5f, -12.5f}, false);
+    m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-12.5f, -12.5f});
+
+    auto modBtn = Button::createWithNode(
+        CircleButtonSprite::createWithSprite(
+            "icon.png"_spr,
+            0.925f),
+        [](auto) {
+            openInfoPopup(Mod::get());
+        });
+    modBtn->setID("mod-info-btn");
+    modBtn->setScale(0.625f);
+
+    m_mainLayer->addChildAtPosition(modBtn, Anchor::BottomRight, {-17.5, 17.5f});
 
     auto btns = std::to_array<SaveButtonData>(
         {
             {
                 "upload-btn",
-                "Upload Settings",
+                "Sync to Cloud",
                 "GJ_sRecentIcon_001.png",
                 "GJ_button_03.png",
                 [this](auto) {
-                    startUploadTask(nullptr);
+                    createQuickPopup(
+                        "Upload Data",
+                        "Sync current settings <cy>with the cloud</c>?\n"
+                        "<cr>Currently saved data will be overriden</c>.",
+                        "Cancel",
+                        "Yes",
+                        [this](auto, bool ok) {
+                            if (ok) startUploadTask();
+                        });
                 },
             },
             {
                 "download-btn",
-                "Download Settings",
+                "Load to Game",
                 "GJ_sDownloadIcon_001.png",
                 "GJ_button_01.png",
                 [this](auto) {
-                    startDownloadTask(nullptr);
+                    createQuickPopup(
+                        "Download Data",
+                        "Sync cloud-saved settings <cg>to your game</c>?\n"
+                        "<cr>Current game settings will be overriden</c>.",
+                        "Cancel",
+                        "Yes",
+                        [this](auto, bool ok) {
+                            if (ok) startDownloadTask();
+                        });
                 },
             },
         });
@@ -98,10 +128,10 @@ bool SyncPopup::init() {
     auto menu = CCNode::create();
     menu->setID("btn-container");
     menu->setAnchorPoint({0.5, 0.5});
-    menu->setContentSize({65.f, 65.f});
+    menu->setContentSize({165.f, 65.f});
     menu->setLayout(menuLayout);
 
-    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, -8.75f}, false);
+    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, -10.f});
 
     for (auto& b : btns) {
         auto btnSprsLayout = RowLayout::create()
@@ -127,7 +157,7 @@ bool SyncPopup::init() {
         btnSprs->updateLayout();
 
         auto btnSpr = NineSlice::create(b.background);
-        btnSpr->setContentSize({btnSprs->getScaledContentWidth() + 10.f, btnSprs->getScaledContentHeight() + 12.5f});
+        btnSpr->setContentSize({menu->getScaledContentWidth() - 12.5f, btnSprs->getScaledContentHeight() + 12.5f});
 
         btnSpr->addChildAtPosition(btnSprs, Anchor::Center);
 
@@ -136,16 +166,41 @@ bool SyncPopup::init() {
             std::move(b.callback));
         btn->setID(std::move(b.id));
         btn->setScale(0.875f);
+        btn->setScaleMultiplier(1.125f);
 
         menu->addChild(btn);
     };
 
     menu->updateLayout();
 
+    auto infoLabel = Label::createRich(
+        "Sync your <cg>game settings</c> with <cf>Ferry's cloud service</c>.\n"
+        "Saving or loading data will always result in <cr>overwrites</c>.",
+        "geode.loader/mdFontB.fnt");
+    infoLabel->setScale(0.4f);
+    infoLabel->setAlignment(Label::Alignment::Center);
+    infoLabel->setAnchorPoint({0.5, 1});
+
+    m_mainLayer->addChildAtPosition(infoLabel, Anchor::Top, {0.f, -32.5f});
+
+    auto gjam = GJAccountManager::sharedState();
+
+    auto loginLabel = Label::createRich(
+        fmt::format(
+            "Saved data from <cf>Ferry</c> is linked to your GD account.\n"
+            "Logged in as <cc>{}</c>.",
+            gjam->m_username),
+        "chatFont.fnt");
+    loginLabel->setScale(0.5f);
+    loginLabel->setAlignment(Label::Alignment::Center);
+    loginLabel->setAnchorPoint({0.5, 0});
+
+    m_mainLayer->addChildAtPosition(loginLabel, Anchor::Bottom, {0.f, 12.5f});
+
     return true;
 };
 
-void SyncPopup::startUploadTask(Callback&& cb) {
+void SyncPopup::startUploadTask() {
     m_inProgress = true;
     m_downloadTask.cancel();
 
@@ -156,20 +211,20 @@ void SyncPopup::startUploadTask(Callback&& cb) {
     m_progressPopup->show();
 
     m_uploadTask.spawn(
-        SaveManager::get()->uploadGameVars(),
+        save::uploadGameVars(),
         [this](WebRes res) {
             m_inProgress = false;
 
             if (res.isOk()) {
                 m_progressPopup->showSuccessMessage("Data saved to cloud!");
             } else {
-                m_progressPopup->showFailMessage("Data save failed.");
+                m_progressPopup->showFailMessage("Sync failed");
                 log::error("Couldn't save data: {}", res.getError());
             };
         });
 };
 
-void SyncPopup::startDownloadTask(Callback&& cb) {
+void SyncPopup::startDownloadTask() {
     m_inProgress = true;
     m_uploadTask.cancel();
 
@@ -180,11 +235,11 @@ void SyncPopup::startDownloadTask(Callback&& cb) {
     m_progressPopup->show();
 
     m_downloadTask.spawn(
-        SaveManager::get()->downloadGameVars(),
+        save::downloadGameVars(),
         [this](Result<StringMap<bool>> res) {
             auto const fallback = [this](std::string_view err) {
                 m_inProgress = false;
-                m_progressPopup->showFailMessage("Data save failed.");
+                m_progressPopup->showFailMessage("Sync failed");
 
                 log::error("Couldn't apply settings data: {}", err);
             };
@@ -204,7 +259,7 @@ void SyncPopup::startDownloadTask(Callback&& cb) {
             };
 
             m_inProgress = false;
-            m_progressPopup->showSuccessMessage("Data synced!");
+            m_progressPopup->showSuccessMessage("Data loaded!");
         });
 };
 

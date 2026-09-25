@@ -7,7 +7,7 @@
 using namespace geode::prelude;
 using namespace cw::ferry;
 
-arc::Future<WebRes> SaveManager::uploadGameVars() {
+arc::Future<WebRes> save::uploadGameVars() {
     auto tokenRes = co_await argon::startAuth();
     if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402);
 
@@ -21,14 +21,13 @@ arc::Future<WebRes> SaveManager::uploadGameVars() {
         StringMap<bool> vars;
 
         auto gm = GameManager::sharedState();
+        log::debug("Iterating through {} variables...", vars::all.size());
 
-        for (auto const& [key, val] : gm->m_valueKeeper->asExt()) {
-            if (str::startsWith(key, "gv_0")) {
-                if (auto v = typeinfo_cast<CCString*>(val)) vars[str::filter(key, "0123456789")] = v->boolValue();
-            };
+        for (auto const& key : vars::all) {
+            vars[key] = gm->getGameVariable(key);
         };
 
-        log::info("{}", vars);
+        log::trace("{}", vars);
         return vars;
     });
 
@@ -45,26 +44,12 @@ arc::Future<WebRes> SaveManager::uploadGameVars() {
                    .body(bw.writtenVec())
                    .param("account_id", accountID)
                    .param("authtoken", std::move(token))
-                   .onProgress([](web::WebProgress const& prog) {
-                       auto val = prog.uploadProgress();
-                       if (val.has_value()) async::waitForMainThread([&val]() {
-                           ProgressEvent().send(std::move(val).value());
-                       });
-                   })
-                   .post("http://localhost:6767/api/v1/upload");  // still testing, ferry.cheeseworks.gay soon!
+                   .post("https://ferry.cheeseworks.gay/api/v1/upload");
 
-    auto webResp = webres::processResp(res);
-
-    if (webResp.isOk()) {
-        co_await async::waitForMainThread([]() {
-            Notification::create("Successfully synced game settings!", NotificationIcon::Success)->show();
-        });
-    };
-
-    co_return webResp;
+    co_return webres::processResp(res);
 };
 
-arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
+arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
     GEODE_CO_UNWRAP_INTO(std::string token, co_await argon::startAuth());
 
     auto const accountID = *co_await async::waitForMainThread<int>([]() {
@@ -74,13 +59,7 @@ arc::Future<Result<StringMap<bool>>> SaveManager::downloadGameVars() {
     auto res = co_await request::base()
                    .param("account_id", accountID)
                    .param("authtoken", std::move(token))
-                   .onProgress([](web::WebProgress const& prog) {
-                       auto val = prog.downloadProgress();
-                       if (val.has_value()) async::waitForMainThread([&val]() {
-                           ProgressEvent().send(std::move(val).value());
-                       });
-                   })
-                   .get("http://localhost:6767/api/v1/download");  // still testing, ferry.cheeseworks.gay soon!
+                   .get("https://ferry.cheeseworks.gay/api/v1/download");
 
     if (res.error()) {
         auto const webResp = webres::processResp(res);
