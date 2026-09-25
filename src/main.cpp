@@ -4,7 +4,6 @@
 
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/AccountLayer.hpp>
-#include <Geode/modify/GameManager.hpp>
 
 using namespace geode::prelude;
 using namespace cw::ferry;

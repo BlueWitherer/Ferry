@@ -33,7 +33,7 @@ bool SyncPopup::init() {
     setTitle("Ferry");
 
     auto linkBtnMenuLayout = ColumnLayout::create()
-                                 ->setGap(2.5f)
+                                 ->setGap(2.f)
                                  ->setAutoScale(false)
                                  ->setAutoGrowAxis(0.f);
 
@@ -98,17 +98,16 @@ bool SyncPopup::init() {
 
     m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-15.f, -15.f});
 
-    auto modBtn = Button::createWithNode(
-        CircleButtonSprite::createWithSprite(
-            "icon.png"_spr,
-            0.925f),
+    auto settingsBtn = Button::createWithNode(
+        CircleButtonSprite::createWithSpriteFrameName(
+            "geode.loader/settings.png"),
         [](auto) {
             openSettingsPopup(Mod::get());
         });
-    modBtn->setID("mod-settings-btn");
-    modBtn->setScale(0.625f);
+    settingsBtn->setID("mod-settings-btn");
+    settingsBtn->setScale(0.625f);
 
-    m_mainLayer->addChildAtPosition(modBtn, Anchor::BottomRight, {-20.f, 20.f});
+    m_mainLayer->addChildAtPosition(settingsBtn, Anchor::BottomRight);
 
     auto menuLayout = ColumnLayout::create()
                           ->setGap(6.25f)
@@ -134,7 +133,7 @@ bool SyncPopup::init() {
                 createQuickPopup(
                     "Upload Data",
                     "Sync current settings <cy>with the cloud</c>?\n"
-                    "<cr>Currently saved data will be overriden</c>.",
+                    "<cr>Currently saved data will be overwritten</c>.",
                     "Cancel",
                     "Yes",
                     [this](auto, bool ok) {
@@ -151,7 +150,7 @@ bool SyncPopup::init() {
                 createQuickPopup(
                     "Download Data",
                     "Sync cloud-saved settings <cg>to your game</c>?\n"
-                    "<cr>Current game settings will be overriden</c>.",
+                    "<cr>Current game settings will be overwritten</c>.",
                     "Cancel",
                     "Yes",
                     [this](auto, bool ok) {

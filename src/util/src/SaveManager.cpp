@@ -100,7 +100,6 @@ void save::applyGameVars(StringMap<bool> const& vars) {
             continue;
         };
 
-        log::trace("Setting game variable {} to {}...", key, val);
         gm->setGameVariable(key.c_str(), val);
     };
 };
