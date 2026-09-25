@@ -8,7 +8,7 @@
     },
     "id": "cheeseworks.ferry",
     "name": "Ferry",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "developers": [
         "Cheeseworks"
     ],
@@ -23,14 +23,6 @@
         "utility",
         "enhancement"
     ],
-    "dependencies": {
-        "geode.node-ids": ">=1.22.0"
-    },
-    "api": {
-        "include": [
-            "include/*.hpp"
-        ]
-    },
     "resources": {
         "sprites": [
             "resources/*.png"
