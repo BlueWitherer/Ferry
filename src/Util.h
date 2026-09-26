@@ -6,13 +6,13 @@
 #include <dbuf/ByteWriter.hpp>
 
 #include <ui/Include.h>
+
+#include <util/Macros.h>
 #include <util/Include.h>
 
 #include <Geode/Geode.hpp>
 
 namespace cw::ferry {
-    namespace str = geode::utils::string;
-
     namespace request {
         inline auto base() {
             auto loader = geode::Loader::get();

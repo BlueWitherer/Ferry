@@ -46,6 +46,7 @@ jobs:
                   export-symbols: true
                   target: ${{ matrix.config.target }}
                   build-config: ${{ matrix.config.build-type || 'Release'}}
+                  configure-args: "-DCW_TESTING=OFF"
 
     package:
         name: Package Builds

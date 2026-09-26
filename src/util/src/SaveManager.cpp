@@ -50,7 +50,7 @@ arc::Future<WebRes> save::uploadGameVars() {
                    .body(bw.writtenVec())
                    .param("account_id", accountID)
                    .param("authtoken", std::move(token))
-                   .post("https://ferry.cheeseworks.gay/api/v1/upload");
+                   .post("/api/v1/upload"_api);
 
     co_return webres::processResp(res);
 };
@@ -65,7 +65,7 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
     auto res = co_await request::base()
                    .param("account_id", accountID)
                    .param("authtoken", std::move(token))
-                   .get("https://ferry.cheeseworks.gay/api/v1/download");
+                   .get("/api/v1/download"_api);
 
     if (res.error()) {
         auto const webResp = webres::processResp(res);

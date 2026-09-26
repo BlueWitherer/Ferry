@@ -25,6 +25,11 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 setup_geode_mod(${PROJECT_NAME})
 
+option(CW_TESTING "Enable local testing mode" ON)
+if(CW_TESTING)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CW_TESTING=1)
+endif()
+
 CPMAddPackage("gh:GlobedGD/argon@1.5.1")
 CPMAddPackage("gh:dankmeme01/dbuf@1.1.0")
 target_link_libraries(${PROJECT_NAME} argon dbuf)

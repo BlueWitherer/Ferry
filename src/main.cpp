@@ -8,6 +8,10 @@
 using namespace geode::prelude;
 using namespace cw::ferry;
 
+$on_game(Loaded) {
+    log::debug("Using web API url: {}", url::apiBase);
+};
+
 class $modify(FerryMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
