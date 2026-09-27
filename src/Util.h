@@ -25,5 +25,18 @@ namespace cw::ferry {
                     loader->getGameVersion()))
                 .timeout(std::chrono::seconds(15));
         };
+
+        inline auto withAuth(int accountId, std::string token) {
+            return geode::utils::web::WebRequest()
+                .param("account_id", accountId)
+                .param("authtoken", std::move(token));
+        };
+
+        inline auto setBytes(geode::utils::web::WebRequest other, geode::ByteVector data) {
+            return other
+                .body(std::move(data));
+        };
     };
+
+    using namespace ui;
 };

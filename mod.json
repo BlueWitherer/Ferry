@@ -29,6 +29,11 @@
         ]
     },
     "settings": {
+        "also-desc": {
+            "type": "info",
+            "description": "Automatically sync Ferry data alongside your Geometry Dash account.",
+            "color": "#40E348"
+        },
         "also-upload": {
             "type": "bool",
             "name": "Sync to Cloud when Syncing Account",
@@ -39,6 +44,23 @@
             "type": "bool",
             "name": "Load to Game when Loading Account",
             "description": "Trigger the setting data download process simulatneously when loading your Geometry Dash account data from the cloud.",
+            "default": true
+        },
+        "auto-desc": {
+            "type": "info",
+            "description": "Select what data will be automatically synced when you save or load your Geometry Dash account data.",
+            "color": "#32C8FF"
+        },
+        "auto-gamevars": {
+            "type": "bool",
+            "name": "Game Settings",
+            "description": "Automatically sync your game settings when triggering auto-sync.",
+            "default": true
+        },
+        "auto-geode": {
+            "type": "bool",
+            "name": "Geode Loader Settings",
+            "description": "Automatically sync your Geode loader settings when triggering auto-sync.",
             "default": true
         }
     },

@@ -4,18 +4,36 @@
 
 #include <Geode/Geode.hpp>
 
+#include <Geode/loader/ModSettingsManager.hpp>
+
 using namespace geode::prelude;
 using namespace cw::ferry;
 
+namespace cw::ferry {
+    namespace impl {
+        static auto getAccountId() {
+            return GJAccountManager::sharedState()->m_accountID;
+        };
+
+        static auto toBytes(std::string_view str) {
+            return ByteVector{str.begin(), str.end()};
+        };
+
+        static auto fromBytes(ByteSpan data) {
+            return std::string{data.begin(), data.end()};
+        };
+    };
+};
+
+#define CW_FERRY_ARGON_UNWRAP(var)                                                                  \
+    auto tokenRes = co_await argon::startAuth();                                                    \
+    if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402); \
+    var = std::move(tokenRes).unwrap()
+
 arc::Future<WebRes> save::uploadGameVars() {
-    auto tokenRes = co_await argon::startAuth();
-    if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402);
+    CW_FERRY_ARGON_UNWRAP(auto token);
 
-    auto token = std::move(tokenRes).unwrap();
-
-    auto const accountID = *co_await async::waitForMainThread<int>([]() {
-        return GJAccountManager::sharedState()->m_accountID;
-    });
+    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
 
     auto vars = *co_await async::waitForMainThread<StringMap<bool>>([]() {
         StringMap<bool> vars;
@@ -46,25 +64,20 @@ arc::Future<WebRes> save::uploadGameVars() {
         bw.writeBool(value);
     };
 
-    auto res = co_await request::base()
-                   .body(bw.writtenVec())
-                   .param("account_id", accountID)
-                   .param("authtoken", std::move(token))
+    auto res = co_await request::setBytes(
+        request::withAuth(accountID, std::move(token)),
+        bw.writtenVec())
                    .post("/api/v1/upload"_api);
 
     co_return webres::processResp(res);
 };
 
 arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
-    GEODE_CO_UNWRAP_INTO(std::string token, co_await argon::startAuth());
+    GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
 
-    auto const accountID = *co_await async::waitForMainThread<int>([]() {
-        return GJAccountManager::sharedState()->m_accountID;
-    });
+    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
 
-    auto res = co_await request::base()
-                   .param("account_id", accountID)
-                   .param("authtoken", std::move(token))
+    auto res = co_await request::withAuth(accountID, std::move(token))
                    .get("/api/v1/download"_api);
 
     if (res.error()) {
@@ -89,7 +102,7 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
         vars[std::move(key)] = val;
     };
 
-    co_return Ok(vars);
+    co_return Ok(std::move(vars));
 };
 
 void save::applyGameVars(StringMap<bool> const& vars) {
@@ -102,4 +115,54 @@ void save::applyGameVars(StringMap<bool> const& vars) {
 
         gm->setGameVariable(key.c_str(), val);
     };
+};
+
+arc::Future<WebRes> save::geode::uploadSettings() {
+    CW_FERRY_ARGON_UNWRAP(auto token);
+
+    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
+
+    auto const& settings = save::geode::getSettings("geode.loader");
+
+    auto res = co_await request::setBytes(
+        request::withAuth(accountID, std::move(token)),
+        impl::toBytes(settings.dump(matjson::NO_INDENTATION)))
+                   .post("/api/v1/upload-geode"_api);
+
+    co_return webres::processResp(res);
+};
+
+arc::Future<Result<matjson::Value>> save::geode::downloadSettings() {
+    GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
+
+    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
+
+    auto res = co_await request::withAuth(accountID, std::move(token))
+                   .get("/api/v1/download-geode"_api);
+
+    if (res.error()) {
+        auto const webResp = webres::processResp(res);
+        co_return Err("{}: {}", webResp.getCode(), webResp.getError());
+    };
+
+    GEODE_CO_UNWRAP_INTO(auto json, matjson::Value::parse(impl::fromBytes(res.data())));
+    co_return Ok(std::move(json));
+};
+
+void save::geode::applySettings(std::string_view modID, matjson::Value data) {
+    return applySettings(Loader::get()->getInstalledMod(modID), std::move(data));
+};
+
+void save::geode::applySettings(Mod* mod, matjson::Value data) {
+    auto& saved = save::geode::getSettings(mod);
+    saved = std::move(data);
+};
+
+matjson::Value& save::geode::getSettings(std::string_view modID) {
+    return getSettings(Loader::get()->getInstalledMod(modID));
+};
+
+matjson::Value& save::geode::getSettings(::geode::Mod* mod) {
+    ModSettingsManager::from(mod)->save();
+    return mod->getSavedSettingsData();
 };
