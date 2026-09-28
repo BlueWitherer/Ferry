@@ -389,7 +389,7 @@ bool SyncPopup::init() {
         [](auto) {
             createQuickPopup(
                 "Help",
-                "This is the <cg>Ferry Sync Menu</c>. Here, you can <cy>upload and download the game settings linked to your Geometry Dash account</c>.",
+                "This is the <cg>Ferry Sync Menu</c>. You can <cy>upload and download your game settings data</c> here, which is linked to <cg>your Geometry Dash account</c>.",
                 "OK",
                 nullptr,
                 nullptr);
