@@ -1,7 +1,5 @@
 #include <Util.h>
 
-#include <ranges>
-
 #include <Geode/Geode.hpp>
 
 #include <Geode/modify/MenuLayer.hpp>

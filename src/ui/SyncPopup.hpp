@@ -30,26 +30,26 @@ namespace cw::ferry {
             };
 
         private:
-            bool m_inProgress = false;
+            std::atomic<bool> m_inProgress = false;
             geode::Ref<UploadActionPopup> m_progressPopup = nullptr;
 
-            geode::async::TaskHolder<WebRes> m_uploadTask;
-            geode::async::TaskHolder<geode::Result<geode::utils::StringMap<bool>>> m_downloadVarsTask;
-            geode::async::TaskHolder<geode::Result<matjson::Value>> m_downloadSettingsTask;
+            geode::async::TaskHolder<geode::Result<>> m_tasks;
 
-            std::unordered_set<SyncType> m_toSync;
+            asp::Mutex<std::map<uint8_t, SyncType>> m_toSync;
 
             asp::SmallVec<SyncType, 4> getSyncTypes() const;
 
+            arc::Future<geode::Result<>> runTaskForIndex(uint8_t i, bool upload = false);
+
+            arc::Future<geode::Result<>> startGVUploadTask();
+            arc::Future<geode::Result<>> startGVDownloadTask();
+
+            arc::Future<geode::Result<>> startGeodeUploadTask();
+            arc::Future<geode::Result<>> startGeodeDownloadTask();
+
         protected:
-            void startUploadTasks();
-            void startDownloadTasks();
-
-            void startGVUploadTask();
-            void startGVDownloadTask();
-
-            void startGeodeUploadTask();
-            void startGeodeDownloadTask();
+            arc::Future<geode::Result<>> runUploadTasks();
+            arc::Future<geode::Result<>> runDownloadTasks();
 
             void onClosePopup(UploadActionPopup* popup) override;
 

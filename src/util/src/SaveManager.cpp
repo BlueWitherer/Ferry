@@ -149,20 +149,22 @@ arc::Future<Result<matjson::Value>> save::geode::downloadSettings() {
     co_return Ok(std::move(json));
 };
 
-void save::geode::applySettings(std::string_view modID, matjson::Value data) {
-    return applySettings(Loader::get()->getInstalledMod(modID), std::move(data));
+void save::geode::applySettings(std::string_view modID, matjson::Value const& data) {
+    return applySettings(Loader::get()->getInstalledMod(modID), data);
 };
 
-void save::geode::applySettings(Mod* mod, matjson::Value data) {
-    auto& saved = save::geode::getSettings(mod);
-    saved = std::move(data);
+void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
+    auto res = ModSettingsManager::from(mod)->load(data);
+    if (res.isErr()) return log::error("Failed to load settings for {}: {}", mod->getID(), res.unwrapErr());
+
+    ModSettingsManager::from(mod)->save();
 };
 
 matjson::Value& save::geode::getSettings(std::string_view modID) {
     return getSettings(Loader::get()->getInstalledMod(modID));
 };
 
-matjson::Value& save::geode::getSettings(::geode::Mod* mod) {
+matjson::Value& save::geode::getSettings(Mod* mod) {
     ModSettingsManager::from(mod)->save();
     return mod->getSavedSettingsData();
 };

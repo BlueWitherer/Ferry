@@ -2,6 +2,8 @@
 
 #include <Util.h>
 
+#include <ranges>
+
 #include <Geode/Geode.hpp>
 
 #include <Geode/ui/GeodeUI.hpp>
@@ -148,6 +150,8 @@ bool SyncPopup::init() {
             "GJ_sRecentIcon_001.png",
             "GJ_button_03.png",
             [this](auto) {
+                if (m_toSync.lock()->empty()) return Notification::create("No option selected", NotificationIcon::Error)->show();
+
                 createQuickPopup(
                     "Upload Data",
                     "Sync current settings <cy>with the cloud</c>?\n"
@@ -155,7 +159,28 @@ bool SyncPopup::init() {
                     "Cancel",
                     "Yes",
                     [this](auto, bool ok) {
-                        if (ok) startUploadTasks();
+                        if (ok) {
+                            m_inProgress = true;
+
+                            impl::removeOptionsLayer();
+                            impl::resetNode(m_progressPopup);
+
+                            m_progressPopup = UploadActionPopup::create(this, "Preparing upload...");
+                            m_progressPopup->show();
+
+                            m_tasks.spawn(
+                                runUploadTasks(),
+                                [this](Result<> res) {
+                                    m_inProgress = false;
+
+                                    if (res.isErr()) {
+                                        log::error("Upload(s) failed: {}", res.unwrapErr());
+                                        m_progressPopup->showFailMessage("An error occurred");
+                                    } else {
+                                        m_progressPopup->showSuccessMessage("Sync complete!");
+                                    };
+                                });
+                        };
                     });
             },
         },
@@ -165,14 +190,37 @@ bool SyncPopup::init() {
             "GJ_sDownloadIcon_001.png",
             "GJ_button_01.png",
             [this](auto) {
+                if (m_toSync.lock()->empty()) return Notification::create("No option selected", NotificationIcon::Error)->show();
+
                 createQuickPopup(
                     "Download Data",
                     "Sync cloud-saved settings <cg>to your game</c>?\n"
-                    "<cr>Current game settings will be overwritten</c>.",
+                    "<cr>Current game settings will be overridden</c>.",
                     "Cancel",
                     "Yes",
                     [this](auto, bool ok) {
-                        if (ok) startDownloadTasks();
+                        if (ok) {
+                            m_inProgress = true;
+
+                            impl::removeOptionsLayer();
+                            impl::resetNode(m_progressPopup);
+
+                            m_progressPopup = UploadActionPopup::create(this, "Preparing download...");
+                            m_progressPopup->show();
+
+                            m_tasks.spawn(
+                                runDownloadTasks(),
+                                [this](Result<> res) {
+                                    m_inProgress = false;
+
+                                    if (res.isErr()) {
+                                        log::error("Download(s) failed: {}", res.unwrapErr());
+                                        m_progressPopup->showFailMessage("An error occurred");
+                                    } else {
+                                        m_progressPopup->showSuccessMessage("Sync complete!");
+                                    };
+                                });
+                        };
                     });
             },
         },
@@ -220,7 +268,7 @@ bool SyncPopup::init() {
 
     auto infoLabel = Label::createRich(
         "Sync your <cg>game settings</c> with <cf>Ferry's cloud service</c>.\n"
-        "Saving or loading data will always result in <cr>overwrites</c>.",
+        "Saving or loading data will always result in <cr>overrides</c>.",
         "geode.loader/mdFontB.fnt");
     infoLabel->setScale(0.4f);
     infoLabel->setAlignment(Label::Alignment::Center);
@@ -264,10 +312,13 @@ bool SyncPopup::init() {
 
     for (auto const& t : types) {
         auto toggle = SyncSelect::create(t, [this](SyncType t, bool on) {
+            auto toSync = m_toSync.lock();
+            auto i = static_cast<uint8_t>(t);
+
             if (on) {
-                if (auto it = m_toSync.find(t); it == m_toSync.end()) m_toSync.insert(t);
+                (*toSync)[i] = t;
             } else {
-                if (auto it = m_toSync.find(t); it != m_toSync.end()) m_toSync.erase(it);
+                if (auto it = toSync->find(i); it != toSync->end()) toSync->erase(it);
             };
         });
         toggle->setScale(0.825f);
@@ -362,126 +413,86 @@ bool SyncPopup::init() {
 
     return true;
 };
-void SyncPopup::startUploadTasks() {};
 
-void SyncPopup::startDownloadTasks() {};
+asp::SmallVec<SyncType, 4> SyncPopup::getSyncTypes() const {
+    auto toSync = m_toSync.lock();
 
-void SyncPopup::startGVUploadTask() {
-    m_inProgress = true;
+    asp::SmallVec<SyncType, 4> out;
+    for (auto const& type : *toSync | std::views::values) out.push_back(type);
 
-    m_downloadVarsTask.cancel();
-    m_downloadSettingsTask.cancel();
-
-    impl::removeOptionsLayer();
-    impl::resetNode(m_progressPopup);
-
-    m_progressPopup = UploadActionPopup::create(this, "Uploading settings data...");
-    m_progressPopup->show();
-
-    m_uploadTask.spawn(
-        save::uploadGameVars(),
-        [this](WebRes res) {
-            m_inProgress = false;
-
-            if (res.isOk()) {
-                m_progressPopup->showSuccessMessage("Data saved to cloud!");
-            } else {
-                m_progressPopup->showFailMessage("Sync failed");
-                log::error("Couldn't save settings data: {}", res.getError());
-            };
-        });
+    return out;
 };
 
-void SyncPopup::startGVDownloadTask() {
-    m_inProgress = true;
-    m_uploadTask.cancel();
+arc::Future<Result<>> SyncPopup::runTaskForIndex(uint8_t i, bool upload) {
+    switch (static_cast<SyncType>(i)) {
+        default: co_return Err("Unknown error");
 
-    impl::removeOptionsLayer();
-    impl::resetNode(m_progressPopup);
-
-    m_progressPopup = UploadActionPopup::create(this, "Downloading settings data...");
-    m_progressPopup->show();
-
-    m_downloadVarsTask.spawn(
-        save::downloadGameVars(),
-        [this](Result<StringMap<bool>> res) {
-            auto const fallback = [this](std::string_view err) {
-                m_inProgress = false;
-                m_progressPopup->showFailMessage("Sync failed");
-
-                log::error("Couldn't apply settings data: {}", err);
-            };
-
-            if (res.isErr()) return fallback(res.unwrapErr());
-
-            save::applyGameVars(res.unwrap());
-
-            m_inProgress = false;
-            m_progressPopup->showSuccessMessage("Data loaded!");
-        });
+        case SyncType::GameSettings: co_return co_await (upload ? startGVUploadTask() : startGVDownloadTask());
+        case SyncType::GeodeSettings: co_return co_await (upload ? startGeodeUploadTask() : startGeodeDownloadTask());
+    };
 };
 
-void SyncPopup::startGeodeUploadTask() {
-    m_inProgress = true;
+arc::Future<Result<>> SyncPopup::runUploadTasks() {
+    auto toSync = m_toSync.lock();
+    for (auto const& t : *toSync | std::views::keys) {
+        GEODE_CO_UNWRAP(co_await runTaskForIndex(t, true));
+    };
 
-    m_downloadVarsTask.cancel();
-    m_downloadSettingsTask.cancel();
-
-    impl::removeOptionsLayer();
-    impl::resetNode(m_progressPopup);
-
-    m_progressPopup = UploadActionPopup::create(this, "Uploading Geode settings data...");
-    m_progressPopup->show();
-
-    m_uploadTask.spawn(
-        save::geode::uploadSettings(),
-        [this](WebRes res) {
-            m_inProgress = false;
-
-            if (res.isOk()) {
-                m_progressPopup->showSuccessMessage("Data saved to cloud!");
-            } else {
-                m_progressPopup->showFailMessage("Sync failed");
-                log::error("Couldn't save Geode settings data: {}", res.getError());
-            };
-        });
+    co_return Ok();
 };
 
-void SyncPopup::startGeodeDownloadTask() {
-    m_inProgress = true;
-    m_uploadTask.cancel();
+arc::Future<Result<>> SyncPopup::runDownloadTasks() {
+    auto toSync = m_toSync.lock();
+    for (auto const& t : *toSync | std::views::keys) {
+        GEODE_CO_UNWRAP(co_await runTaskForIndex(t));
+    };
 
-    impl::removeOptionsLayer();
-    impl::resetNode(m_progressPopup);
+    co_return Ok();
+};
 
-    m_progressPopup = UploadActionPopup::create(this, "Downloading Geode settings data...");
-    m_progressPopup->show();
+arc::Future<Result<>> SyncPopup::startGVUploadTask() {
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading game settings data..."); });
 
-    m_downloadSettingsTask.spawn(
-        save::geode::downloadSettings(),
-        [this](Result<matjson::Value> res) {
-            auto const fallback = [this](std::string_view err) {
-                m_inProgress = false;
-                m_progressPopup->showFailMessage("Sync failed");
+    auto const res = co_await save::uploadGameVars();
+    if (res.isErr()) co_return Err(res.getError());
 
-                log::error("Couldn't apply Geode settings data: {}", err);
-            };
+    co_return Ok();
+};
 
-            if (res.isErr()) return fallback(res.unwrapErr());
+arc::Future<Result<>> SyncPopup::startGVDownloadTask() {
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading game settings data..."); });
 
-            save::geode::applySettings("geode.loader", res.unwrap());
+    GEODE_CO_UNWRAP_INTO(auto const res, co_await save::downloadGameVars());
 
-            m_inProgress = false;
-            m_progressPopup->showSuccessMessage("Data loaded!");
-        });
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying game settings..."); });
+
+    save::applyGameVars(res);
+    co_return Ok();
+};
+
+arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading Geode settings data..."); });
+
+    auto const res = co_await save::geode::uploadSettings();
+    if (res.isErr()) co_return Err(res.getError());
+
+    co_return Ok();
+};
+
+arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
+    async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading Geode settings data..."); });
+
+    GEODE_CO_UNWRAP_INTO(auto const res, co_await save::geode::downloadSettings());
+
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying Geode settings..."); });
+
+    save::geode::applySettings("geode.loader", res);
+    co_return Ok();
 };
 
 void SyncPopup::onClosePopup(UploadActionPopup* popup) {
     if (!popup->m_succeeded) {
-        m_uploadTask.cancel();
-
-        m_downloadVarsTask.cancel();
-        m_downloadSettingsTask.cancel();
+        m_tasks.cancel();
 
         if (m_inProgress) Notification::create("Task cancelled", NotificationIcon::Error)->show();
     };
@@ -491,10 +502,7 @@ void SyncPopup::onClosePopup(UploadActionPopup* popup) {
 };
 
 void SyncPopup::onExit() {
-    m_uploadTask.cancel();
-
-    m_downloadVarsTask.cancel();
-    m_downloadSettingsTask.cancel();
+    m_tasks.cancel();
 
     impl::resetNode(m_progressPopup);
 
