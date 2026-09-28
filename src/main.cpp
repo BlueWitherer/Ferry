@@ -137,7 +137,7 @@ class $modify(FerryAccountLayer, AccountLayer) {
                 co_return;
             };
 
-            save::geode::applySettings("geode.loader", std::move(res).unwrap());
+            save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, std::move(res).unwrap()));
 
             async::waitForMainThread([]() {
                 Notification::create("(Ferry) Loaded Geode settings", NotificationIcon::Success)->show();

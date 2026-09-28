@@ -486,7 +486,7 @@ arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
 
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying Geode settings..."); });
 
-    save::geode::applySettings("geode.loader", res);
+    save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, res));
     co_return Ok();
 };
 

@@ -122,7 +122,7 @@ arc::Future<WebRes> save::geode::uploadSettings() {
 
     auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
 
-    auto const& settings = save::geode::getSettings("geode.loader");
+    auto const settings = save::geode::filterSettings(CW_GEODE_ID, save::geode::getSettings(CW_GEODE_ID));
 
     auto res = co_await request::setBytes(
         request::withAuth(accountID, std::move(token)),
@@ -158,6 +158,21 @@ void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
     if (res.isErr()) return log::error("Failed to load settings for {}: {}", mod->getID(), res.unwrapErr());
 
     ModSettingsManager::from(mod)->save();
+};
+
+matjson::Value save::geode::filterSettings(std::string_view modID, matjson::Value const& data) {
+    return filterSettings(Loader::get()->getInstalledMod(modID), data);
+};
+
+matjson::Value save::geode::filterSettings(Mod* mod, matjson::Value const& data) {
+    matjson::Value out;
+
+    for (auto const& [key, v] : data) {
+        if (typeinfo_pointer_cast<FileSetting>(mod->getSetting(key))) continue;
+        out[key] = v;
+    };
+
+    return out;
 };
 
 matjson::Value& save::geode::getSettings(std::string_view modID) {

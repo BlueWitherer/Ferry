@@ -16,6 +16,9 @@ namespace cw::ferry {
             void applySettings(std::string_view modID, matjson::Value const& data);
             void applySettings(::geode::Mod* mod, matjson::Value const& data);
 
+            matjson::Value filterSettings(std::string_view modID, matjson::Value const& data);
+            matjson::Value filterSettings(::geode::Mod* mod, matjson::Value const& data);
+
             matjson::Value& getSettings(std::string_view modID);
             matjson::Value& getSettings(::geode::Mod* mod);
 

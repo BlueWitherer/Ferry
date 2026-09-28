@@ -5,3 +5,5 @@
 #else
 #define CW_FERRY_WEB_BASEURL "https://ferry.cheeseworks.gay"
 #endif
+
+#define CW_GEODE_ID "geode.loader"
