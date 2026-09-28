@@ -126,7 +126,7 @@ SyncSelect* SyncSelect::create(SyncType type, Callback&& cb) {
 bool SyncPopup::init() {
     if (!Popup::init({280.f, 200.f})) return false;
 
-    setID("sync-popup"_spr);
+    setID("sync-menu"_spr);
     setTitle("Ferry");
 
     auto menuLayout = ColumnLayout::create()

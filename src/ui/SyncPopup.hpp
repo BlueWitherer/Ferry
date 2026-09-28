@@ -13,7 +13,6 @@ namespace cw::ferry {
     };
 
     namespace ui {
-
         class SyncPopup final : public geode::Popup, public UploadPopupDelegate {
             struct SaveButtonData final {
                 std::string id;

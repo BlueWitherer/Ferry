@@ -29,10 +29,24 @@
         ]
     },
     "settings": {
-        "also-desc": {
-            "type": "info",
-            "description": "Automatically sync Ferry data alongside your Geometry Dash account.",
-            "color": "#40E348"
+        "btn": {
+            "type": "button",
+            "name": "Ferry Menu",
+            "buttons": {
+                "ferry": "Ferry Sync Menu"
+            },
+            "description": "Open the <cg>Ferry Sync Menu</c>."
+        },
+        "menu-btn": {
+            "type": "bool",
+            "name": "Main Menu Button",
+            "description": "Add the button for Ferry to the main menu.",
+            "default": true
+        },
+        "also-title": {
+            "type": "title",
+            "name": "Auto-Sync",
+            "description": "Automatically sync Ferry data alongside your Geometry Dash account."
         },
         "also-upload": {
             "type": "bool",

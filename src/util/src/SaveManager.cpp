@@ -154,10 +154,21 @@ void save::geode::applySettings(std::string_view modID, matjson::Value const& da
 };
 
 void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
-    auto res = ModSettingsManager::from(mod)->load(data);
-    if (res.isErr()) return log::error("Failed to load settings for {}: {}", mod->getID(), res.unwrapErr());
+    auto const prev = mod->getSavedSettingsData();
 
-    ModSettingsManager::from(mod)->save();
+    auto msm = ModSettingsManager::from(mod);
+
+    (void)msm->load(data);
+    auto const saved = msm->save();
+
+    for (auto const& [key, value] : saved) {
+        auto const& old = prev[key];
+
+        if (value != old) queueInMainThread([mod, key]() {
+            log::trace("Sending setting change event for {}/{}", mod->getID(), key);
+            SettingChangedEvent(mod->getID(), key).send(mod->getSetting(key));
+        });
+    };
 };
 
 matjson::Value save::geode::filterSettings(std::string_view modID, matjson::Value const& data) {
@@ -180,6 +191,8 @@ matjson::Value& save::geode::getSettings(std::string_view modID) {
 };
 
 matjson::Value& save::geode::getSettings(Mod* mod) {
-    ModSettingsManager::from(mod)->save();
-    return mod->getSavedSettingsData();
+    auto msm = ModSettingsManager::from(mod);
+
+    msm->save();
+    return msm->getSaveData();
 };
