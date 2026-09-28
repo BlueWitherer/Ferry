@@ -1,5 +1,5 @@
 # ![📂](frame:GJ_duplicateBtn_001.png?scale=0.45) Ferry
-**Sync your game client settings!**
+**Back up your game client settings!**
 
 *by [Cheeseworks](user:6408873)!*
 

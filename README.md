@@ -1,5 +1,5 @@
 # [<img src="logo.png" width="25" alt="The mod's logo." />](https://geode-sdk.org/mods/cheeseworks.ferry) Ferry
-Sync your game client settings!
+Back up your game client settings!
 
 > [<img alt="YouTube" src="https://img.shields.io/youtube/channel/subscribers/UCi2M6N_ff1UC6MyfWzKQvgg?style=for-the-badge&logo=youtube&logoColor=ffffff&label=YouTube">](https://www.youtube.com/@cheese_works/) [<img alt="Bluesky" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpublic.api.bsky.app%2Fxrpc%2Fapp.bsky.actor.getProfile%2F%3Factor%3Dcheeseworks.gay&query=%24.followersCount&style=for-the-badge&logo=bluesky&logoColor=ffffff&label=Bluesky">](https://bsky.app/profile/cheeseworks.gay) [<img alt="Discord" src="https://img.shields.io/discord/460081436637134859?style=for-the-badge&logo=discord&logoColor=ffffff&label=Discord">](https://dsc.gg/cubic)
 
