@@ -1,4 +1,4 @@
-#include "../saves.hpp"
+#include "../save.hpp"
 
 #include <Util.h>
 
@@ -108,7 +108,7 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
 void save::applyGameVars(StringMap<bool> const& vars) {
     auto gm = GameManager::sharedState();
     for (auto const& [key, val] : vars) {
-        if (key.size() != 4) {
+        if (key.size() != 4 && numFromString<unsigned int>(key).isOk()) {
             log::error("Key {} is not valid", key);
             continue;
         };
