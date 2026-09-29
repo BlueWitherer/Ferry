@@ -20,7 +20,7 @@ namespace cw::ferry {
 
         static void setupHooks(auto& self, std::string_view settingID) {
             StringMap<std::shared_ptr<Hook>> const& hooks = self.m_hooks;
-            auto enable = Mod::get()->getSettingValue<bool>(settingID);
+            auto enable = mod->getSettingValue<bool>(settingID);
 
             for (auto& hook : hooks | std::views::values) {
                 hook->setAutoEnable(enable);
@@ -35,7 +35,7 @@ namespace cw::ferry {
 $on_game(Loaded) {
     log::debug("Using web API url: {}", url::apiBase);
 
-    ButtonSettingPressedEventV3(Mod::get(), "btn")
+    ButtonSettingPressedEventV3(mod, "btn")
         .listen([](std::string_view buttonKey) {
             if (!CCScene::get()->getChildByID("sync-menu"_spr)) SyncPopup::create()->show();
         })
@@ -89,84 +89,66 @@ class $modify(FerryAccountLayer, AccountLayer) {
             default: break;
 
             case 1: {  // save
-                if (Mod::get()->getSettingValue<bool>("also-upload")) async::spawn(upload(), []() {});
+                if (mod->getSettingValue<bool>("also-upload")) async::spawn(upload(), [](Result<> res) {
+                    if (res.isOk()) return Notification::create("(Ferry) Save complete!", NotificationIcon::Success)->show();
+
+                    log::error("Failed to upload data: {}", res.unwrapErr());
+                    Notification::create("(Ferry) Save failed", NotificationIcon::Error)->show();
+                });
             } break;
 
             case 2: {  // load
-                if (Mod::get()->getSettingValue<bool>("also-download")) async::spawn(download(), []() {});
+                if (mod->getSettingValue<bool>("also-download")) async::spawn(download(), [](Result<> res) {
+                    if (res.isOk()) return Notification::create("(Ferry) Load complete!", NotificationIcon::Success)->show();
+
+                    log::error("Failed to download data: {}", res.unwrapErr());
+                    Notification::create("(Ferry) Load failed", NotificationIcon::Error)->show();
+                });
             } break;
         };
 
         AccountLayer::FLAlert_Clicked(layer, btn2);
     };
 
-    arc::Future<> upload() {
-        if (Mod::get()->getSettingValue<bool>("auto-gamevars")) {
+    arc::Future<Result<>> upload() {
+        if (mod->getSettingValue<bool>("auto-gamevars")) {
             co_await async::waitForMainThread([]() {
                 Notification::create("(Ferry) Syncing settings to cloud...", NotificationIcon::Loading)->show();
             });
 
             auto const gvRes = co_await save::uploadGameVars();
 
-            if (gvRes.isOk()) {
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Synced settings data", NotificationIcon::Success)->show(); });
-            } else {
-                log::error("Failed to sync settings data: {}", gvRes.getError());
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Failed to sync settings", NotificationIcon::Error)->show(); });
-            };
+            if (gvRes.isErr()) co_return Err(gvRes.getError());
         };
 
-        if (Mod::get()->getSettingValue<bool>("auto-geode")) {
+        if (mod->getSettingValue<bool>("auto-geode")) {
             co_await async::waitForMainThread([]() { Notification::create("(Ferry) Syncing Geode settings to cloud...", NotificationIcon::Loading)->show(); });
 
             auto const gvRes = co_await save::geode::uploadSettings();
 
-            if (gvRes.isOk()) {
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Synced Geode settings data", NotificationIcon::Success)->show(); });
-            } else {
-                log::error("Failed to sync Geode settings data: {}", gvRes.getError());
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Failed to sync Geode settings", NotificationIcon::Error)->show(); });
-            };
+            if (gvRes.isErr()) co_return Err(gvRes.getError());
         };
 
-        co_return;
+        co_return Ok();
     };
 
-    arc::Future<> download() {
-        if (Mod::get()->getSettingValue<bool>("auto-gamevars")) {
+    arc::Future<Result<>> download() {
+        if (mod->getSettingValue<bool>("auto-gamevars")) {
             co_await async::waitForMainThread([]() { Notification::create("(Ferry) Loading settings from cloud...", NotificationIcon::Loading)->show(); });
 
-            auto const res = co_await save::downloadGameVars();
+            GEODE_CO_UNWRAP_INTO(auto const vars, co_await save::downloadGameVars());
 
-            if (res.isErr()) {
-                log::error("Failed to load settings data: {}", res.unwrapErr());
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Failed to load settings", NotificationIcon::Error)->show(); });
-
-                co_return;
-            };
-
-            save::applyGameVars(res.unwrap());
-
-            co_await async::waitForMainThread([]() { Notification::create("(Ferry) Loaded settings", NotificationIcon::Success)->show(); });
+            save::applyGameVars(vars);
         };
 
-        if (Mod::get()->getSettingValue<bool>("auto-geode")) {
+        if (mod->getSettingValue<bool>("auto-geode")) {
             co_await async::waitForMainThread([]() { Notification::create("(Ferry) Loading Geode settings from cloud...", NotificationIcon::Loading)->show(); });
 
-            auto res = co_await save::geode::downloadSettings();
+            GEODE_CO_UNWRAP_INTO(auto const settings, co_await save::geode::downloadSettings());
 
-            if (res.isErr()) {
-                log::error("Failed to load Geode settings data: {}", res.unwrapErr());
-                co_await async::waitForMainThread([]() { Notification::create("(Ferry) Failed to load Geode settings", NotificationIcon::Error)->show(); });
-
-                co_return;
-            };
-
-            save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, std::move(res).unwrap()));
-
-            co_await async::waitForMainThread([]() { Notification::create("(Ferry) Loaded Geode settings", NotificationIcon::Success)->show(); });
+            save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, settings));
         };
 
-        co_return;
+        co_return Ok();
     };
 };

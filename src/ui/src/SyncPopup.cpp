@@ -66,22 +66,20 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
 
     addChildAtPosition(bg, Anchor::Center);
 
-    auto togglerOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
-    togglerOff->setScale(0.825f);
-    auto togglerOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
-    togglerOn->setScale(0.825f);
+    auto toggle = CCMenuItemExt::createTogglerWithStandardSprites(
+        0.825f,
+        [this](CCMenuItemToggler* sender) {
+            auto on = !sender->isToggled();
 
-    auto toggle = CCMenuItemToggler::create(
-        togglerOff,
-        togglerOn,
-        this,
-        menu_selector(SyncSelect::onToggle));
-    toggle->setID("toggler");
+            mod->setSavedValue(impl::getSyncTypeID(m_type), on);
+            return m_callback(m_type, on);
+        });
+    toggle->setID(fmt::format("{}-toggler", impl::getSyncTypeID(m_type)));
     toggle->setZOrder(9);
 
     addChildAtPosition(toggle, Anchor::Left, {toggle->getScaledContentWidth() * 0.625f, 0.f});
 
-    auto saved = Mod::get()->getSavedValue<bool>(impl::getSyncTypeID(m_type), m_type == SyncType::GameSettings);
+    auto saved = mod->getSavedValue<bool>(impl::getSyncTypeID(m_type), m_type == SyncType::GameSettings);
 
     toggle->toggle(saved);
     m_callback(type, saved);
@@ -101,15 +99,6 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
     updateLayout();
 
     return true;
-};
-
-void SyncSelect::onToggle(CCObject* sender) {
-    if (auto toggle = typeinfo_cast<CCMenuItemToggler*>(sender)) {
-        auto on = !toggle->isToggled();
-
-        Mod::get()->setSavedValue(impl::getSyncTypeID(m_type), on);
-        return m_callback(m_type, on);
-    };
 };
 
 SyncSelect* SyncSelect::create(SyncType type, Callback&& cb) {
@@ -367,7 +356,7 @@ bool SyncPopup::init() {
             "support-me-btn",
             "geode.loader/gift.png",
             [](auto) {
-                openSupportPopup(Mod::get());
+                openSupportPopup(mod);
             },
         },
     };
@@ -404,7 +393,7 @@ bool SyncPopup::init() {
         CircleButtonSprite::createWithSpriteFrameName(
             "geode.loader/settings.png"),
         [](auto) {
-            openSettingsPopup(Mod::get());
+            openSettingsPopup(mod);
         });
     settingsBtn->setID("mod-settings-btn");
     settingsBtn->setScale(0.625f);
