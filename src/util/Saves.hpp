@@ -25,6 +25,8 @@ namespace cw::ferry {
             namespace mods {
                 arc::Future<WebRes> uploadSettings();
                 arc::Future<::geode::Result<matjson::Value>> downloadSettings();
+
+                matjson::Value getAllSettings();
             };
         };
 
