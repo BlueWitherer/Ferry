@@ -163,16 +163,10 @@ void save::geode::applySettings(std::string_view modID, matjson::Value const& da
     return applySettings(Loader::get()->getInstalledMod(modID), data);
 };
 
-void save::geode::applySettings(Mod* mod, matjson::Value data) {
+void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
     auto const prev = mod->getSavedSettingsData();
 
     auto msm = ModSettingsManager::from(mod);
-
-    for (auto& [key, value] : data) {
-        if (mod->hasSetting(key)) {
-            if (auto file = typeinfo_pointer_cast<FileSetting>(mod->getSetting(key))) data[key] = file->getValue();
-        };
-    };
 
     (void)msm->load(data);
     auto const saved = msm->save();
