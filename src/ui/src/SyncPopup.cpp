@@ -143,7 +143,7 @@ bool SyncPopup::init() {
         SaveButtonData{
             "upload-btn",
             "Sync to Cloud",
-            "d_artCloud_01_001.png",
+            "d_artCloud_03_001.png",
             "GJ_button_02.png",
             [this](auto) {
                 if (m_toSync.lock()->empty()) return Notification::create("No option selected", NotificationIcon::Error)->show();

@@ -1,3 +1,6 @@
+# v1.2.0 
+- Added all mod settings sync option
+
 # v1.1.0 
 - Added Geode settings sync option
   - Added toggle settings for different data types for auto-sync
