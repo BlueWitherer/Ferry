@@ -22,6 +22,13 @@ namespace cw::ferry {
             };
         };
 
+        void rescale(CCNode* node, float targetSize) {
+            auto size = node->getScaledContentSize();
+            auto scale = targetSize / size.height;
+
+            node->setScale(scale);
+        };
+
         static void removeOptionsLayer() {
             if (auto mol = CCScene::get()->getChildByID("MoreOptionsLayer")) mol->removeFromParent();
         };
@@ -113,7 +120,7 @@ SyncSelect* SyncSelect::create(SyncType type, Callback&& cb) {
 };
 
 bool SyncPopup::init() {
-    if (!Popup::init({280.f, 200.f})) return false;
+    if (!Popup::init({280.f, 235.f})) return false;
 
     setID("sync-menu"_spr);
     setTitle("Ferry");
@@ -127,17 +134,17 @@ bool SyncPopup::init() {
     auto menu = CCNode::create();
     menu->setID("btn-container");
     menu->setAnchorPoint({0.5, 0.5});
-    menu->setContentSize({165.f, 65.f});
+    menu->setContentSize({170.f, 65.f});
     menu->setLayout(menuLayout);
 
-    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, 17.5f});
+    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, 30.f});
 
     auto btns = std::array{
         SaveButtonData{
             "upload-btn",
             "Sync to Cloud",
-            "GJ_sRecentIcon_001.png",
-            "GJ_button_03.png",
+            "d_artCloud_01_001.png",
+            "GJ_button_02.png",
             [this](auto) {
                 if (m_toSync.lock()->empty()) return Notification::create("No option selected", NotificationIcon::Error)->show();
 
@@ -176,7 +183,7 @@ bool SyncPopup::init() {
         SaveButtonData{
             "download-btn",
             "Load to Game",
-            "GJ_sDownloadIcon_001.png",
+            "geode.loader/install.png",
             "GJ_button_01.png",
             [this](auto) {
                 if (m_toSync.lock()->empty()) return Notification::create("No option selected", NotificationIcon::Error)->show();
@@ -223,11 +230,12 @@ bool SyncPopup::init() {
 
         auto btnSprs = CCNode::create();
         btnSprs->setAnchorPoint({0.5, 0.5});
-        btnSprs->setContentSize({65.f, 65.f});
+        btnSprs->setContentSize({menu->getScaledContentWidth() - 15.f, 65.f});
         btnSprs->setLayout(btnSprsLayout);
 
         auto btnSprIcon = CCSprite::createWithSpriteFrameName(b.icon.c_str());
-        btnSprIcon->setScale(0.75f);
+
+        impl::rescale(btnSprIcon, 12.5f);
 
         auto btnSprLabel = Label::create(std::move(b.text), "bigFont.fnt");
         btnSprLabel->setScale(0.475f);
@@ -292,14 +300,15 @@ bool SyncPopup::init() {
     toggleMenu->setContentSize({m_mainLayer->getScaledContentWidth() * 0.625f, 32.5f});
     toggleMenu->setLayout(toggleMenuLayout);
 
-    m_mainLayer->addChildAtPosition(toggleMenu, Anchor::Center, {0.f, -45.f});
+    m_mainLayer->addChildAtPosition(toggleMenu, Anchor::Center, {0.f, -52.5f});
 
     static constexpr SyncType types[] = {
         SyncType::GameSettings,
         SyncType::GeodeSettings,
+        SyncType::ModSettings,
     };
 
-    for (auto const& t : types) {
+    for (auto t : types) {
         auto toggle = SyncSelect::create(t, [this](SyncType t, bool on) {
             auto toSync = m_toSync.lock();
             auto i = static_cast<uint8_t>(t);
@@ -307,7 +316,7 @@ bool SyncPopup::init() {
             if (on) {
                 (*toSync)[i] = t;
             } else {
-                if (auto it = toSync->find(i); it != toSync->end()) toSync->erase(it);
+                if (auto const it = toSync->find(i); it != toSync->end()) toSync->erase(it);
             };
         });
         toggle->setScale(0.825f);
@@ -321,7 +330,7 @@ bool SyncPopup::init() {
     toggleMenuLabel->setScale(0.625f);
     toggleMenuLabel->setAlignment(Label::Alignment::Center);
 
-    m_mainLayer->addChildAtPosition(toggleMenuLabel, Anchor::Center, {0.f, -35.f + (toggleMenu->getScaledContentHeight() * 0.5f)});
+    m_mainLayer->addChildAtPosition(toggleMenuLabel, Anchor::Center, {0.f, -40.f + (toggleMenu->getScaledContentHeight() * 0.5f)});
 
     auto linkBtnMenuLayout = ColumnLayout::create()
                                  ->setGap(2.f)
@@ -418,6 +427,7 @@ arc::Future<Result<>> SyncPopup::runTaskForIndex(uint8_t i, bool upload) {
 
         case SyncType::GameSettings: co_return co_await (upload ? startGVUploadTask() : startGVDownloadTask());
         case SyncType::GeodeSettings: co_return co_await (upload ? startGeodeUploadTask() : startGeodeDownloadTask());
+        case SyncType::ModSettings: co_return co_await (upload ? startModUploadTask() : startModDownloadTask());
     };
 };
 
@@ -469,13 +479,36 @@ arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
 };
 
 arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
-    async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading Geode settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading Geode settings data..."); });
 
     GEODE_CO_UNWRAP_INTO(auto const res, co_await save::geode::downloadSettings());
 
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying Geode settings..."); });
 
     save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, res));
+    co_return Ok();
+};
+
+arc::Future<Result<>> SyncPopup::startModUploadTask() {
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading mod settings data..."); });
+
+    auto const res = co_await save::geode::mods::uploadSettings();
+    if (res.isErr()) co_return Err(res.getError());
+
+    co_return Ok();
+};
+
+arc::Future<Result<>> SyncPopup::startModDownloadTask() {
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading mod settings data..."); });
+
+    GEODE_CO_UNWRAP_INTO(auto const res, co_await save::geode::mods::downloadSettings());
+
+    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying mod settings..."); });
+
+    for (auto const& [modID, data] : res) {
+        save::geode::applySettings(modID, save::geode::filterSettings(modID, data));
+    };
+
     co_return Ok();
 };
 

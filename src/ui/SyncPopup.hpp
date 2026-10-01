@@ -46,6 +46,9 @@ namespace cw::ferry {
             arc::Future<geode::Result<>> startGeodeUploadTask();
             arc::Future<geode::Result<>> startGeodeDownloadTask();
 
+            arc::Future<geode::Result<>> startModUploadTask();
+            arc::Future<geode::Result<>> startModDownloadTask();
+
         protected:
             arc::Future<geode::Result<>> runUploadTasks();
             arc::Future<geode::Result<>> runDownloadTasks();

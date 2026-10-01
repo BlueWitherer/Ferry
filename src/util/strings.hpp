@@ -12,7 +12,7 @@ namespace cw::ferry {
     };
 
     inline std::string apiEndpoint(std::string_view path) {
-        return fmt::format("{}{}", url::apiBase, path);
+        return fmt::format("{}/api{}", url::apiBase, path);
     };
 
     inline std::string operator""_api(const char* str, size_t len) {
