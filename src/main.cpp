@@ -163,7 +163,7 @@ class $modify(FerryAccountLayer, AccountLayer) {
             GEODE_CO_UNWRAP_INTO(auto const settings, co_await save::geode::mods::downloadSettings());
 
             for (auto const& [key, value] : settings) {
-                save::geode::applySettings(key, save::geode::filterSettings(key, value));
+                if (Loader::get()->isModInstalled(key)) save::geode::applySettings(key, save::geode::filterSettings(key, value));
             };
         };
 

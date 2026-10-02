@@ -506,7 +506,7 @@ arc::Future<Result<>> SyncPopup::startModDownloadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying mod settings..."); });
 
     for (auto const& [modID, data] : res) {
-        save::geode::applySettings(modID, save::geode::filterSettings(modID, data));
+        if (Loader::get()->isModInstalled(modID)) save::geode::applySettings(modID, save::geode::filterSettings(modID, data));
     };
 
     co_return Ok();
