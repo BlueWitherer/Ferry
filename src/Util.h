@@ -13,15 +13,13 @@
 #include <Geode/Geode.hpp>
 
 namespace cw::ferry {
-    inline static geode::Mod* mod = geode::Mod::get();
-
     namespace request {
         inline auto base() {
             auto loader = geode::Loader::get();
 
             return geode::utils::web::WebRequest()
                 .userAgent(fmt::format("Ferry/{} ({}, Geode {}, GD {})",
-                    mod->getVersion().toVString(false),
+                    geode::Mod::get()->getVersion().toVString(false),
                     geode::utils::platform::getString(),
                     loader->getVersion(),
                     loader->getGameVersion()))

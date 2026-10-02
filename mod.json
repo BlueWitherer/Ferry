@@ -50,25 +50,25 @@
         },
         "sync-mods-loaded-only": {
             "type": "bool",
-            "name": "Sync Loaded Mods Only",
-            "description": "Only upload settings for mods that are currently loaded.",
+            "name": "Sync Settings for Loaded Mods Only to Cloud",
+            "description": "Only upload settings for <cg>mods that are currently loaded</c> to the cloud. Otherwise, settings for <co>*all* mods</c> will be synced, <cr>whether they're enabled or disabled</c>.",
             "default": true
         },
         "also-title": {
             "type": "title",
             "name": "Auto-Sync",
-            "description": "Automatically sync Ferry data alongside your Geometry Dash account."
+            "description": "Automatically sync <cf>Ferry</c> data alongside your Geometry Dash account."
         },
         "also-upload": {
             "type": "bool",
             "name": "Sync to Cloud when Syncing Account",
-            "description": "Trigger the setting data upload process simulatneously when syncing your Geometry Dash account data to the cloud.",
+            "description": "Trigger the setting data upload process simultaneously when syncing your Geometry Dash account data to the cloud.",
             "default": true
         },
         "also-download": {
             "type": "bool",
             "name": "Load to Game when Loading Account",
-            "description": "Trigger the setting data download process simulatneously when loading your Geometry Dash account data from the cloud.",
+            "description": "Trigger the setting data download process simultaneously when loading your Geometry Dash account data from the cloud.",
             "default": true
         },
         "auto-desc": {
@@ -79,19 +79,19 @@
         "auto-gamevars": {
             "type": "bool",
             "name": "Game Settings",
-            "description": "Automatically sync your game settings when triggering auto-sync.",
+            "description": "Automatically sync your <cg>game settings</c> when triggering auto-sync.",
             "default": true
         },
         "auto-geode": {
             "type": "bool",
             "name": "Geode Loader Settings",
-            "description": "Automatically sync your Geode loader settings when triggering auto-sync.",
+            "description": "Automatically sync your <cg>Geode loader settings</c> when triggering auto-sync.",
             "default": true
         },
         "auto-geode-mods": {
             "type": "bool",
             "name": "All Mods' Settings",
-            "description": "Automatically sync all of your mods' settings when triggering auto-sync.",
+            "description": "Automatically sync <cg>all of your mods' settings</c> when triggering auto-sync.",
             "default": false
         }
     },

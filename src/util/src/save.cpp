@@ -232,7 +232,7 @@ matjson::Value save::geode::mods::getAllSettings() {
 
     auto const mods = loader->getAllMods();
     for (auto const& mod : mods) {
-        if (mod->getID() != CW_GEODE_ID && (mod->getSettingValue<bool>("sync-mods-loaded-only") ? loader->isModLoaded(mod->getID()) : true)) out[mod->getID()] = filterSettings(mod, getSettings(mod));
+        if (mod->getID() != CW_GEODE_ID && (Mod::get()->getSettingValue<bool>("sync-mods-loaded-only") ? loader->isModLoaded(mod->getID()) : true)) out[mod->getID()] = filterSettings(mod, getSettings(mod));
     };
 
     return out;
