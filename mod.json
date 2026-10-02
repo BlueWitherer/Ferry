@@ -76,6 +76,12 @@
             "name": "Geode Loader Settings",
             "description": "Automatically sync your Geode loader settings when triggering auto-sync.",
             "default": true
+        },
+        "auto-geode-mods": {
+            "type": "bool",
+            "name": "All Mods' Settings",
+            "description": "Automatically sync all of your mods' settings when triggering auto-sync.",
+            "default": false
         }
     },
     "early-load": false

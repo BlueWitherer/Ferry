@@ -129,6 +129,14 @@ class $modify(FerryAccountLayer, AccountLayer) {
             if (gvRes.isErr()) co_return Err(gvRes.getError());
         };
 
+        if (mod->getSettingValue<bool>("auto-geode-mods")) {
+            co_await async::waitForMainThread([]() { Notification::create("(Ferry) Syncing all mods' settings to cloud...", NotificationIcon::Loading)->show(); });
+
+            auto const gvRes = co_await save::geode::mods::uploadSettings();
+
+            if (gvRes.isErr()) co_return Err(gvRes.getError());
+        };
+
         co_return Ok();
     };
 
@@ -147,6 +155,16 @@ class $modify(FerryAccountLayer, AccountLayer) {
             GEODE_CO_UNWRAP_INTO(auto const settings, co_await save::geode::downloadSettings());
 
             save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, settings));
+        };
+
+        if (mod->getSettingValue<bool>("auto-geode-mods")) {
+            co_await async::waitForMainThread([]() { Notification::create("(Ferry) Loading all mods' settings from cloud...", NotificationIcon::Loading)->show(); });
+
+            GEODE_CO_UNWRAP_INTO(auto const settings, co_await save::geode::mods::downloadSettings());
+
+            for (auto const& [key, value] : settings) {
+                save::geode::applySettings(key, save::geode::filterSettings(key, value));
+            };
         };
 
         co_return Ok();
