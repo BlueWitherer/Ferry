@@ -208,7 +208,7 @@ matjson::Value& save::geode::getSettings(Mod* mod) {
 };
 
 arc::Future<WebRes> save::geode::mods::uploadSettings() {
-    auto res = co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::mods::getAllSettings()));
+    auto res = co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::mods::getAllSettings());
     if (res.getCode() == 413) co_await async::waitForMainThread([]() {
         createQuickPopup(
             "Uh oh!",
@@ -228,9 +228,11 @@ arc::Future<::geode::Result<matjson::Value>> save::geode::mods::downloadSettings
 matjson::Value save::geode::mods::getAllSettings() {
     matjson::Value out;
 
-    auto const mods = Loader::get()->getAllMods();
+    auto loader = Loader::get();
+
+    auto const mods = loader->getAllMods();
     for (auto const& mod : mods) {
-        if (mod->getID() != CW_GEODE_ID) out[mod->getID()] = filterSettings(mod, getSettings(mod));
+        if (mod->getID() != CW_GEODE_ID && (mod->getSettingValue<bool>("sync-mods-loaded-only") ? loader->isModLoaded(mod->getID()) : true)) out[mod->getID()] = filterSettings(mod, getSettings(mod));
     };
 
     return out;

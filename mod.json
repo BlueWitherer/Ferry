@@ -43,6 +43,17 @@
             "description": "Add the button for Ferry to the main menu.",
             "default": true
         },
+        "syncing": {
+            "type": "title",
+            "name": "Sync Data",
+            "description": "Configuration for synchronized data."
+        },
+        "sync-mods-loaded-only": {
+            "type": "bool",
+            "name": "Sync Loaded Mods Only",
+            "description": "Only upload settings for mods that are currently loaded.",
+            "default": true
+        },
         "also-title": {
             "type": "title",
             "name": "Auto-Sync",
