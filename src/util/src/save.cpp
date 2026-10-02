@@ -208,7 +208,17 @@ matjson::Value& save::geode::getSettings(Mod* mod) {
 };
 
 arc::Future<WebRes> save::geode::mods::uploadSettings() {
-    co_return co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::mods::getAllSettings()));
+    auto res = co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::mods::getAllSettings()));
+    if (res.getCode() == 413) co_await async::waitForMainThread([]() {
+        createQuickPopup(
+            "Uh oh!",
+            "Looks like your mod settings data is <cr>too large</c> to upload to <cf>Ferry's cloud</c>. Try <cy>uninstalling some mods</c> and try again.",
+            "OK",
+            nullptr,
+            nullptr);
+    });
+
+    co_return res;
 };
 
 arc::Future<::geode::Result<matjson::Value>> save::geode::mods::downloadSettings() {
