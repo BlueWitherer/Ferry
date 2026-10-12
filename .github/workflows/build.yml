@@ -36,7 +36,7 @@ jobs:
         runs-on: ${{ matrix.config.os }}
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Compile the mod
               uses: geode-sdk/build-geode-mod@main
@@ -60,10 +60,10 @@ jobs:
                   zstd: true
                   optimize-pngs: true
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               with:
-                  name: Build Output
-                  path: ${{ steps.build.outputs.build-output }}
+                  name: build-output
+                  path: ${{ steps.build.outputs.build-output }}/*
 
     nightly:
         name: Nightly Release
@@ -73,9 +73,10 @@ jobs:
             contents: write
 
         steps:
-            - uses: actions/download-artifact@v4
+            - uses: actions/download-artifact@v8
               with:
-                  path: ./artifacts/
+                  path: ./artifacts/build-output/
+                  merge-multiple: true
 
             - name: Get latest release tag
               id: getrelease
@@ -94,7 +95,7 @@ jobs:
                       **Development build for commit ${{ github.sha }}**.
                       > [`View Current Changes`](${{ github.event.repository.html_url }}/compare/${{ steps.getrelease.outputs.tag }}...nightly)
                   files: |
-                      ./artifacts/Build Output/*.*
+                      ./artifacts/build-output/**/*
 
             - name: Check for Discord webhook URL
               id: check-discord
@@ -107,7 +108,7 @@ jobs:
               with:
                   webhook-url: ${{ secrets.NIGHTLY_WEBHOOK }}
                   files: |
-                      ./artifacts/Build Output/*.geode
+                      ./artifacts/build-output/*.geode
                   embed-title: "[${{ github.event.repository.name }}] Nightly Release"
                   embed-description: |
                       **Development build for commit [`${{ github.sha }}`](${{ github.event.repository.html_url}}/commit/${{ github.sha }})**.
