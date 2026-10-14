@@ -10,6 +10,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(Ferry VERSION 1.2.0)
 
+set(CW_TESTING ON CACHE BOOL "")
 set(CW_ENABLE_WEB ON CACHE BOOL "" FORCE)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
@@ -26,11 +27,6 @@ endif()
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 setup_geode_mod(${PROJECT_NAME})
-
-option(CW_TESTING "Enable local testing mode" ON)
-if(CW_TESTING)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE CW_TESTING=1)
-endif()
 
 CPMAddPackage("gh:dankmeme01/dbuf@1.1.0")
 CPMAddPackage("gh:BlueWitherer/rhatts-geode-sillies#main")

@@ -9,3 +9,4 @@
 #endif
 
 #include <rhatt/Macros.h>
+#include <rhatt/util/WebRes.hpp>

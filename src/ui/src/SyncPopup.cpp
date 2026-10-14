@@ -4,8 +4,6 @@
 
 #include <ranges>
 
-#include <rhatt/prelude.h>
-
 #include <Geode/Geode.hpp>
 
 #include <Geode/ui/GeodeUI.hpp>

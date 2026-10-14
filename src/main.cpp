@@ -34,6 +34,9 @@ namespace cw::ferry {
 
 $on_game(Loaded) {
     log::debug("Using web API url: {}", cw::url::apiBase);
+#ifdef CW_TESTING
+    log::warn("{} is in test mode!", Mod::get()->getID());
+#endif
 
     ButtonSettingPressedEventV3(Mod::get(), "btn")
         .listen([](std::string_view buttonKey) {

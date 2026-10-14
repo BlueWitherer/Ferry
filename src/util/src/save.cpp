@@ -2,8 +2,6 @@
 
 #include <Util.h>
 
-#include <rhatt/prelude.h>
-
 #include <Geode/Geode.hpp>
 
 #include <Geode/loader/ModSettingsManager.hpp>
@@ -13,10 +11,6 @@ using namespace cw::ferry;
 
 namespace cw::ferry {
     namespace impl {
-        static auto getAccountId() {
-            return GJAccountManager::sharedState()->m_accountID;
-        };
-
         static auto toBytes(std::string_view str) {
             return ByteVector{str.begin(), str.end()};
         };
@@ -29,12 +23,10 @@ namespace cw::ferry {
             arc::Future<cw::WebRes> uploadSettings(ZStringView endpoint, matjson::Value const& data) {
                 CW_ARGON_UNWRAP(auto token);
 
-                auto accountID = *co_await async::waitForMainThread<int>(getAccountId);
-
                 auto const settings = save::geode::filterSettings(CW_GEODE_ID, data);
 
                 auto res = co_await request::setBytes(
-                    request::withAuth(accountID, std::move(token)),
+                    cw::request::withAuth(std::move(token)),
                     impl::toBytes(settings.dump(matjson::NO_INDENTATION)))
                                .post(endpoint);
 
@@ -44,9 +36,7 @@ namespace cw::ferry {
             arc::Future<Result<matjson::Value>> downloadSettings(ZStringView endpoint) {
                 GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
 
-                auto accountID = *co_await async::waitForMainThread<int>(getAccountId);
-
-                auto res = co_await request::withAuth(accountID, std::move(token))
+                auto res = co_await (co_await cw::request::withAuthCo(std::move(token)))
                                .get(endpoint);
 
                 if (res.error()) {
@@ -64,8 +54,6 @@ namespace cw::ferry {
 arc::Future<cw::WebRes> save::uploadGameVars() {
     CW_ARGON_UNWRAP(auto token);
 
-    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
-
     auto vars = *co_await async::waitForMainThread<StringMap<bool>>([]() {
         StringMap<bool> vars;
 
@@ -75,8 +63,8 @@ arc::Future<cw::WebRes> save::uploadGameVars() {
         log::trace("Iterating through {} variables...", dict.size());
 
         for (auto const& [key, v] : dict) {
-            if (str::startsWith(key, "gv_0")) {
-                auto const k = str::filter(key, "0123456789");
+            if (cw::str::startsWith(key, "gv_0")) {
+                auto const k = cw::str::filter(key, "0123456789");
                 log::trace("Parsing game variable {}...", k);
                 vars[k] = gm->getGameVariable(k.c_str());
             };
@@ -96,7 +84,7 @@ arc::Future<cw::WebRes> save::uploadGameVars() {
     };
 
     auto res = co_await request::setBytes(
-        request::withAuth(accountID, std::move(token)),
+        (co_await cw::request::withAuthCo(std::move(token))),
         bw.writtenVec())
                    .post("/v1/upload"_api);
 
@@ -106,9 +94,7 @@ arc::Future<cw::WebRes> save::uploadGameVars() {
 arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
     GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
 
-    auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
-
-    auto res = co_await request::withAuth(accountID, std::move(token))
+    auto res = co_await (co_await cw::request::withAuthCo(std::move(token)))
                    .get("/v1/download"_api);
 
     if (res.error()) {
