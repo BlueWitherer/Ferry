@@ -33,7 +33,7 @@ namespace cw::ferry {
 };
 
 $on_game(Loaded) {
-    log::debug("Using web API url: {}", url::apiBase);
+    log::debug("Using web API url: {}", cw::url::apiBase);
 
     ButtonSettingPressedEventV3(Mod::get(), "btn")
         .listen([](std::string_view buttonKey) {
@@ -112,29 +112,24 @@ class $modify(FerryAccountLayer, AccountLayer) {
 
     arc::Future<Result<>> upload() {
         if (Mod::get()->getSettingValue<bool>("auto-gamevars")) {
-            co_await async::waitForMainThread([]() {
-                Notification::create("(Ferry) Syncing settings to cloud...", NotificationIcon::Loading)->show();
-            });
+            co_await async::waitForMainThread([]() { Notification::create("(Ferry) Syncing settings to cloud...", NotificationIcon::Loading)->show(); });
 
-            auto const gvRes = co_await save::uploadGameVars();
-
-            if (gvRes.isErr()) co_return Err(gvRes.getError());
+            auto const res = co_await save::uploadGameVars();
+            if (res.isErr()) co_return Err(res.getError());
         };
 
         if (Mod::get()->getSettingValue<bool>("auto-geode")) {
             co_await async::waitForMainThread([]() { Notification::create("(Ferry) Syncing Geode settings to cloud...", NotificationIcon::Loading)->show(); });
 
-            auto const gvRes = co_await save::geode::uploadSettings();
-
-            if (gvRes.isErr()) co_return Err(gvRes.getError());
+            auto const res = co_await save::geode::uploadSettings();
+            if (res.isErr()) co_return Err(res.getError());
         };
 
         if (Mod::get()->getSettingValue<bool>("auto-geode-mods")) {
             co_await async::waitForMainThread([]() { Notification::create("(Ferry) Syncing all mods' settings to cloud...", NotificationIcon::Loading)->show(); });
 
-            auto const gvRes = co_await save::geode::mods::uploadSettings();
-
-            if (gvRes.isErr()) co_return Err(gvRes.getError());
+            auto const res = co_await save::geode::mods::uploadSettings();
+            if (res.isErr()) co_return Err(res.getError());
         };
 
         co_return Ok();

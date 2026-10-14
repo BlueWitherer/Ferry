@@ -2,17 +2,14 @@
 
 #include <Util.h>
 
+#include <rhatt/prelude.h>
+
 #include <Geode/Geode.hpp>
 
 #include <Geode/loader/ModSettingsManager.hpp>
 
 using namespace geode::prelude;
 using namespace cw::ferry;
-
-#define CW_FERRY_ARGON_UNWRAP(var)                                                                  \
-    auto tokenRes = co_await argon::startAuth();                                                    \
-    if (tokenRes.isErr()) co_return WebRes(std::nullptr_t(), std::move(tokenRes).unwrapErr(), 402); \
-    var = std::move(tokenRes).unwrap()
 
 namespace cw::ferry {
     namespace impl {
@@ -29,8 +26,8 @@ namespace cw::ferry {
         };
 
         namespace data {
-            arc::Future<WebRes> uploadSettings(ZStringView endpoint, matjson::Value const& data) {
-                CW_FERRY_ARGON_UNWRAP(auto token);
+            arc::Future<cw::WebRes> uploadSettings(ZStringView endpoint, matjson::Value const& data) {
+                CW_ARGON_UNWRAP(auto token);
 
                 auto accountID = *co_await async::waitForMainThread<int>(getAccountId);
 
@@ -41,7 +38,7 @@ namespace cw::ferry {
                     impl::toBytes(settings.dump(matjson::NO_INDENTATION)))
                                .post(endpoint);
 
-                co_return webres::processResp(res);
+                co_return cw::request::parse(res);
             };
 
             arc::Future<Result<matjson::Value>> downloadSettings(ZStringView endpoint) {
@@ -53,7 +50,7 @@ namespace cw::ferry {
                                .get(endpoint);
 
                 if (res.error()) {
-                    auto const webResp = webres::processResp(res);
+                    auto const webResp = cw::request::parse(res);
                     co_return Err("{}: {}", webResp.getCode(), webResp.getError());
                 };
 
@@ -64,8 +61,8 @@ namespace cw::ferry {
     };
 };
 
-arc::Future<WebRes> save::uploadGameVars() {
-    CW_FERRY_ARGON_UNWRAP(auto token);
+arc::Future<cw::WebRes> save::uploadGameVars() {
+    CW_ARGON_UNWRAP(auto token);
 
     auto accountID = *co_await async::waitForMainThread<int>(impl::getAccountId);
 
@@ -103,7 +100,7 @@ arc::Future<WebRes> save::uploadGameVars() {
         bw.writtenVec())
                    .post("/v1/upload"_api);
 
-    co_return webres::processResp(res);
+    co_return cw::request::parse(res);
 };
 
 arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
@@ -115,7 +112,7 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
                    .get("/v1/download"_api);
 
     if (res.error()) {
-        auto const webResp = webres::processResp(res);
+        auto const webResp = cw::request::parse(res);
         co_return Err("{}: {}", webResp.getCode(), webResp.getError());
     };
 
@@ -151,7 +148,7 @@ void save::applyGameVars(StringMap<bool> const& vars) {
     };
 };
 
-arc::Future<WebRes> save::geode::uploadSettings() {
+arc::Future<cw::WebRes> save::geode::uploadSettings() {
     co_return co_await impl::data::uploadSettings("/v1/upload-geode"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::getSettings(CW_GEODE_ID)));
 };
 
@@ -207,7 +204,7 @@ matjson::Value& save::geode::getSettings(Mod* mod) {
     return msm->getSaveData();
 };
 
-arc::Future<WebRes> save::geode::mods::uploadSettings() {
+arc::Future<cw::WebRes> save::geode::mods::uploadSettings() {
     auto res = co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::mods::getAllSettings());
     if (res.getCode() == 413) co_await async::waitForMainThread([]() {
         createQuickPopup(

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WebRes.hpp"
+#include <rhatt/util/WebRes.hpp>
 
 #include <Geode/Geode.hpp>
 

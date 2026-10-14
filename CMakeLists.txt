@@ -10,6 +10,8 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(Ferry VERSION 1.2.0)
 
+set(CW_ENABLE_WEB ON CACHE BOOL "" FORCE)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
@@ -30,6 +32,6 @@ if(CW_TESTING)
     target_compile_definitions(${PROJECT_NAME} PRIVATE CW_TESTING=1)
 endif()
 
-CPMAddPackage("gh:GlobedGD/argon@1.5.1")
 CPMAddPackage("gh:dankmeme01/dbuf@1.1.0")
-target_link_libraries(${PROJECT_NAME} argon dbuf)
+CPMAddPackage("gh:BlueWitherer/rhatts-geode-sillies#main")
+target_link_libraries(${PROJECT_NAME} dbuf argon rhatt)
