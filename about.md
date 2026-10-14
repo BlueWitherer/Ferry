@@ -13,7 +13,7 @@ This mod allows you to **save your GD settings to a cloud service**, so you can 
 ---
 
 ### Syncing
-A <cg>*![Ferry](cheeseworks.ferry/icon.png?scale=0.325)* button</c> will appear on the main menu, which will <cy>open a pop-up when you press it</c>. You can either <cy>upload or download your settings</c> to and from the Ferry cloud server. Either option <cr>will **overwrite** previous data</c>.
+A <cg>*![Ferry](cheeseworks.ferry/icon.png?scale=0.275)* button</c> will appear on the main menu, which will <cy>open a pop-up when you press it</c>. You can either <cy>upload or download your settings</c> to and from the Ferry cloud server. Either option <cr>will **overwrite** previous data</c>.
 
 > ![✳️](frame:collaborationIcon_001.png) <cg>*Synced data also includes editor settings!*</c>
 
