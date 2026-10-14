@@ -12,9 +12,6 @@
 ## About
 This mod allows you to **save your GD settings to a cloud service**, so you can synchronize them across multiple devices!
 
-> [!NOTE]
-> *This is an **online** mod. **Check [status.cheeseworks.gay](https://status.cheeseworks.gay/)** before reporting any connectivity issues!*
-
 ---
 
 ### Syncing
