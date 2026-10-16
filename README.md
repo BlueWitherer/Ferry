@@ -1,22 +1,16 @@
-# [<img src="logo.png" width="25" alt="The mod's logo." />](https://geode-sdk.org/mods/cheeseworks.ferry) Ferry
-Back up your game client settings!
+<div align="center">
+<h1><a href="https://geode-sdk.org/mods/cheeseworks.ferry"><img src="logo.png" width="25" alt="The mod's logo." /></a> Ferry</h1>
 
-> [<img alt="YouTube" src="https://img.shields.io/youtube/channel/subscribers/UCi2M6N_ff1UC6MyfWzKQvgg?style=for-the-badge&logo=youtube&logoColor=ffffff&label=YouTube">](https://www.youtube.com/@cheese_works/) [<img alt="Bluesky" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpublic.api.bsky.app%2Fxrpc%2Fapp.bsky.actor.getProfile%2F%3Factor%3Dcheeseworks.gay&query=%24.followersCount&style=for-the-badge&logo=bluesky&logoColor=ffffff&label=Bluesky">](https://bsky.app/profile/cheeseworks.gay) [<img alt="Discord" src="https://img.shields.io/discord/460081436637134859?style=for-the-badge&logo=discord&logoColor=ffffff&label=Discord">](https://dsc.gg/cubic)
+[![Mod Version](https://api.geode-sdk.org/v1/mods/cheeseworks.ferry/status_badge?stat=version)](https://geode-sdk.org/mods/cheeseworks.ferry)
+[![Downloads](https://api.geode-sdk.org/v1/mods/cheeseworks.ferry/status_badge?stat=downloads)](https://geode-sdk.org/mods/cheeseworks.ferry)
+[![Geometry Dash Version](https://api.geode-sdk.org/v1/mods/cheeseworks.ferry/status_badge?stat=gd_version)](https://geode-sdk.org/mods/cheeseworks.ferry)
+[![Geode Version](https://api.geode-sdk.org/v1/mods/cheeseworks.ferry/status_badge?stat=geode_version)](https://geode-sdk.org/mods/cheeseworks.ferry)
 
-> [<img alt="Latest Version" src="https://img.shields.io/github/v/release/BlueWitherer/Ferry?include_prereleases&sort=semver&display_name=release&style=for-the-badge&logo=github&logoColor=ffffff&label=Version">](../../releases/) [<img alt="Code License" src="https://img.shields.io/github/license/BlueWitherer/Ferry?style=for-the-badge&logo=gnu&logoColor=ffffff&label=License">](LICENSE.md)
->  
-> [<img alt="Downloads" src="https://img.shields.io/github/downloads/BlueWitherer/Ferry/total?style=for-the-badge&logo=geode&logoColor=ffffff&label=Downloads">](https://geode-sdk.org/mods/cheeseworks.ferry)
-
-> [!TIP]
-> *This mod has settings you can utilize to customize your experience.*
-
----
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://kofi.cheeseworks.gay/)
+</div>
 
 ## About
 This mod allows you to **save your GD settings to a cloud service**, so you can synchronize them across multiple devices!
-
-> [!NOTE]
-> *This is an **online** mod. **Check [status.cheeseworks.gay](https://status.cheeseworks.gay/)** before reporting any connectivity issues!*
 
 ---
 

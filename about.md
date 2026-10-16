@@ -1,21 +1,19 @@
 # ![📂](frame:GJ_duplicateBtn_001.png?scale=0.45) Ferry
 **Back up your game client settings!**
 
-*by [Cheeseworks](user:6408873)!*
+<cd>by [Cheeseworks](user:6408873)!</c>
 
-> ![✳️](frame:collaborationIcon_001.png) <cg>*This mod has settings you can utilize to customize your experience.*</c>
+![🌐](frame:geode.loader/homepage.png?scale=0.375) <cl>This is an **online** mod. **Check [status.cheeseworks.gay](https://status.cheeseworks.gay/)** before reporting any connectivity issues!</c>
 
 ---
 
 ## About
 This mod allows you to **save your GD settings to a cloud service**, so you can synchronize them across multiple devices!
 
-> ![ℹ️](frame:GJ_infoIcon_001.png?scale=0.5) <cj>*This is an **online** mod. **Check [status.cheeseworks.gay](https://status.cheeseworks.gay/)** before reporting any connectivity issues!*</c>
-
 ---
 
 ### Syncing
-A <cg>*![Ferry](cheeseworks.ferry/icon.png?scale=0.325)* button</c> will appear on the main menu, which will <cy>open a pop-up when you press it</c>. You can either <cy>upload or download your settings</c> to and from the Ferry cloud server. Either option <cr>will **overwrite** previous data</c>.
+A <cg>*![Ferry](cheeseworks.ferry/icon.png?scale=0.275)* button</c> will appear on the main menu, which will <cy>open a pop-up when you press it</c>. You can either <cy>upload or download your settings</c> to and from the Ferry cloud server. Either option <cr>will **overwrite** previous data</c>.
 
 > ![✳️](frame:collaborationIcon_001.png) <cg>*Synced data also includes editor settings!*</c>
 
