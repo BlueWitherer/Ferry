@@ -1,3 +1,7 @@
+# v1.2.1 
+- Ported to Geometry Dash version `2.2091`
+  - Bumped Geode loader support to `v6.0.0`
+
 # v1.2.0 
 - Added all mod settings sync option
 

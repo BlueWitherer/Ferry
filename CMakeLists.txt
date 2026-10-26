@@ -8,7 +8,7 @@ else()
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(Ferry VERSION 1.2.0)
+project(Ferry VERSION 1.2.1)
 
 set(CW_ENABLE_WEB ON CACHE BOOL "" FORCE)
 
