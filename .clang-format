@@ -10,6 +10,8 @@ IncludeBlocks: Preserve
 
 IndentAccessModifiers: false
 
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: false
 AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
 BinPackParameters: BinPack

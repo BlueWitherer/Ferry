@@ -25,7 +25,7 @@ namespace cw::ferry {
 
                 auto const settings = save::geode::filterSettings(CW_GEODE_ID, data);
 
-                auto res = co_await request::setBytes(
+                auto res = co_await cw::request::setBytes(
                                request::withAuth(std::move(token)),
                                impl::toBytes(settings.dump(matjson::NO_INDENTATION))
                 )
@@ -84,7 +84,7 @@ arc::Future<cw::WebRes> save::uploadGameVars() {
         bw.writeBool(value);
     };
 
-    auto res = co_await request::setBytes(
+    auto res = co_await cw::request::setBytes(
                    (co_await request::withAuthCo(std::move(token))),
                    bw.writtenVec()
     )
