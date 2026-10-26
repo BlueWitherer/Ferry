@@ -4,8 +4,6 @@
 
 #include <rhatt/prelude.h>
 
-#include <argon/argon.hpp>
-
 #include <dbuf/ByteReader.hpp>
 #include <dbuf/ByteWriter.hpp>
 
@@ -20,7 +18,7 @@ namespace cw::ferry {
         inline auto setBytes(geode::utils::web::WebRequest other, geode::ByteVector data) {
             return other
                 .body(std::move(data));
-        };
+        }
     };
 
     using namespace ui;

@@ -20,18 +20,18 @@ namespace cw::ferry {
                 node->removeFromParent();
                 node = nullptr;
             };
-        };
+        }
 
         void rescale(CCNode* node, float targetSize) {
             auto size = node->getScaledContentSize();
             auto scale = targetSize / size.height;
 
             node->setScale(scale);
-        };
+        }
 
         static void removeOptionsLayer() {
             if (auto mol = CCScene::get()->getChildByID("MoreOptionsLayer")) mol->removeFromParent();
-        };
+        }
 
         static constexpr auto getSyncTypeName(SyncType type) noexcept {
             switch (type) {
@@ -42,7 +42,7 @@ namespace cw::ferry {
                 case SyncType::ModSettings: return "Mods' Settings";
                 case SyncType::ModSaves: return "Mods' Save Data";
             };
-        };
+        }
 
         static constexpr auto getSyncTypeID(SyncType type) noexcept {
             switch (type) {
@@ -53,7 +53,7 @@ namespace cw::ferry {
                 case SyncType::ModSettings: return "mods-settings";
                 case SyncType::ModSaves: return "mods-save-data";
             };
-        };
+        }
     };
 };
 
@@ -64,8 +64,8 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
     if (!CCMenu::init()) return false;
 
     setID(impl::getSyncTypeID(m_type));
-    setContentSize({50.f, 32.5f});
-    setAnchorPoint({0.5, 0.5});
+    setContentSize({ 50.f, 32.5f });
+    setAnchorPoint({ 0.5, 0.5 });
 
     auto bg = NineSlice::create("geode.loader/black-square.png");
     bg->setZOrder(-9);
@@ -80,11 +80,12 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
 
             Mod::get()->setSavedValue(impl::getSyncTypeID(m_type), on);
             return m_callback(m_type, on);
-        });
+        }
+    );
     toggle->setID(fmt::format("{}-toggler", impl::getSyncTypeID(m_type)));
     toggle->setZOrder(9);
 
-    addChildAtPosition(toggle, Anchor::Left, {toggle->getScaledContentWidth() * 0.625f, 0.f});
+    addChildAtPosition(toggle, Anchor::Left, { toggle->getScaledContentWidth() * 0.625f, 0.f });
 
     auto saved = Mod::get()->getSavedValue<bool>(impl::getSyncTypeID(m_type), m_type == SyncType::GameSettings);
 
@@ -94,10 +95,10 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
     auto label = Label::create(impl::getSyncTypeName(m_type), "bigFont.fnt");
     label->setID("name-label");
     label->setScale(0.375f);
-    label->setAnchorPoint({0, 0.5});
+    label->setAnchorPoint({ 0, 0.5 });
     label->setMaxWidth(57.5f);
 
-    addChildAtPosition(label, Anchor::Left, {toggle->getScaledContentWidth() * 1.25f, 0.f});
+    addChildAtPosition(label, Anchor::Left, { toggle->getScaledContentWidth() * 1.25f, 0.f });
 
     setContentWidth((toggle->getScaledContentWidth() * 1.125f) + label->getScaledContentWidth() * 1.125f);
 
@@ -106,7 +107,7 @@ bool SyncSelect::init(SyncType type, Callback&& cb) {
     updateLayout();
 
     return true;
-};
+}
 
 SyncSelect* SyncSelect::create(SyncType type, Callback&& cb) {
     auto ret = new SyncSelect();
@@ -117,10 +118,10 @@ SyncSelect* SyncSelect::create(SyncType type, Callback&& cb) {
 
     delete ret;
     return nullptr;
-};
+}
 
 bool SyncPopup::init() {
-    if (!Popup::init({280.f, 235.f})) return false;
+    if (!Popup::init({ 250.f, 235.f })) return false;
 
     setID("sync-menu"_spr);
     setTitle("Ferry");
@@ -133,11 +134,11 @@ bool SyncPopup::init() {
 
     auto menu = CCNode::create();
     menu->setID("btn-container");
-    menu->setAnchorPoint({0.5, 0.5});
-    menu->setContentSize({170.f, 65.f});
+    menu->setAnchorPoint({ 0.5, 0.5 });
+    menu->setContentSize({ 170.f, 65.f });
     menu->setLayout(menuLayout);
 
-    m_mainLayer->addChildAtPosition(menu, Anchor::Center, {0.f, 30.f});
+    m_mainLayer->addChildAtPosition(menu, Anchor::Center, { 0.f, 30.f });
 
     auto btns = std::array{
         SaveButtonData{
@@ -175,9 +176,11 @@ bool SyncPopup::init() {
                                     } else {
                                         m_progressPopup->showSuccessMessage("Sync complete!");
                                     };
-                                });
+                                }
+                            );
                         };
-                    });
+                    }
+                );
             },
         },
         SaveButtonData{
@@ -215,9 +218,11 @@ bool SyncPopup::init() {
                                     } else {
                                         m_progressPopup->showSuccessMessage("Sync complete!");
                                     };
-                                });
+                                }
+                            );
                         };
-                    });
+                    }
+                );
             },
         },
     };
@@ -229,8 +234,8 @@ bool SyncPopup::init() {
                                  ->setAutoGrowAxis(65.f);
 
         auto btnSprs = CCNode::create();
-        btnSprs->setAnchorPoint({0.5, 0.5});
-        btnSprs->setContentSize({menu->getScaledContentWidth() - 15.f, 65.f});
+        btnSprs->setAnchorPoint({ 0.5, 0.5 });
+        btnSprs->setContentSize({ menu->getScaledContentWidth() - 15.f, 65.f });
         btnSprs->setLayout(btnSprsLayout);
 
         auto btnSprIcon = CCSprite::createWithSpriteFrameName(b.icon.c_str());
@@ -247,13 +252,14 @@ bool SyncPopup::init() {
         btnSprs->updateLayout();
 
         auto btnSpr = NineSlice::create(b.background);
-        btnSpr->setContentSize({menu->getScaledContentWidth() - 12.5f, btnSprs->getScaledContentHeight() + 12.5f});
+        btnSpr->setContentSize({ menu->getScaledContentWidth() - 12.5f, btnSprs->getScaledContentHeight() + 12.5f });
 
         btnSpr->addChildAtPosition(btnSprs, Anchor::Center);
 
         auto btn = Button::createWithNode(
             btnSpr,
-            std::move(b.callback));
+            std::move(b.callback)
+        );
         btn->setID(std::move(b.id));
         btn->setScale(0.875f);
         btn->setScaleMultiplier(1.125f);
@@ -266,12 +272,13 @@ bool SyncPopup::init() {
     auto infoLabel = Label::createRich(
         "Sync your <cg>game settings</c> with <cf>Ferry's cloud service</c>.\n"
         "Saving or loading data will always result in <cr>overrides</c>.",
-        "geode.loader/mdFontB.fnt");
+        "geode.loader/mdFontB.fnt"
+    );
     infoLabel->setScale(0.4f);
     infoLabel->setAlignment(Label::Alignment::Center);
-    infoLabel->setAnchorPoint({0.5, 1});
+    infoLabel->setAnchorPoint({ 0.5, 1 });
 
-    m_mainLayer->addChildAtPosition(infoLabel, Anchor::Top, {0.f, -32.5f});
+    m_mainLayer->addChildAtPosition(infoLabel, Anchor::Top, { 0.f, -32.5f });
 
     auto gjam = GJAccountManager::sharedState();
 
@@ -279,13 +286,15 @@ bool SyncPopup::init() {
         fmt::format(
             "Saved data from <cf>Ferry</c> is linked to your GD account.\n"
             "Logged in as <cc>{}</c>.",
-            gjam->m_username),
-        "chatFont.fnt");
+            gjam->m_username
+        ),
+        "chatFont.fnt"
+    );
     loginLabel->setScale(0.5f);
     loginLabel->setAlignment(Label::Alignment::Center);
-    loginLabel->setAnchorPoint({0.5, 0});
+    loginLabel->setAnchorPoint({ 0.5, 0 });
 
-    m_mainLayer->addChildAtPosition(loginLabel, Anchor::Bottom, {0.f, 12.5f});
+    m_mainLayer->addChildAtPosition(loginLabel, Anchor::Bottom, { 0.f, 12.5f });
 
     auto toggleMenuLayout = RowLayout::create()
                                 ->setGap(3.75f)
@@ -296,11 +305,11 @@ bool SyncPopup::init() {
     auto toggleMenu = CCNode::create();
     toggleMenu->setID("toggle-container");
     toggleMenu->setZOrder(1);
-    toggleMenu->setAnchorPoint({0.5, 0.5});
-    toggleMenu->setContentSize({m_mainLayer->getScaledContentWidth() * 0.625f, 32.5f});
+    toggleMenu->setAnchorPoint({ 0.5, 0.5 });
+    toggleMenu->setContentSize({ m_mainLayer->getScaledContentWidth() * 0.625f, 32.5f });
     toggleMenu->setLayout(toggleMenuLayout);
 
-    m_mainLayer->addChildAtPosition(toggleMenu, Anchor::Center, {0.f, -52.5f});
+    m_mainLayer->addChildAtPosition(toggleMenu, Anchor::Center, { 0.f, -52.5f });
 
     static constexpr SyncType types[] = {
         SyncType::GameSettings,
@@ -330,7 +339,7 @@ bool SyncPopup::init() {
     toggleMenuLabel->setScale(0.625f);
     toggleMenuLabel->setAlignment(Label::Alignment::Center);
 
-    m_mainLayer->addChildAtPosition(toggleMenuLabel, Anchor::Center, {0.f, -40.f + (toggleMenu->getScaledContentHeight() * 0.5f)});
+    m_mainLayer->addChildAtPosition(toggleMenuLabel, Anchor::Center, { 0.f, -40.f + (toggleMenu->getScaledContentHeight() * 0.5f) });
 
     auto linkBtnMenuLayout = ColumnLayout::create()
                                  ->setGap(2.f)
@@ -339,11 +348,11 @@ bool SyncPopup::init() {
 
     auto linkBtnMenu = CCNode::create();
     linkBtnMenu->setID("link-container");
-    linkBtnMenu->setContentSize({12.5f, 1.25f});
+    linkBtnMenu->setContentSize({ 12.5f, 1.25f });
     linkBtnMenu->setZOrder(1);
     linkBtnMenu->setLayout(linkBtnMenuLayout);
 
-    m_mainLayer->addChildAtPosition(linkBtnMenu, Anchor::BottomLeft, {5.f, 5.f});
+    m_mainLayer->addChildAtPosition(linkBtnMenu, Anchor::BottomLeft, { 7.5f, 7.5f });
 
     auto linkBtns = std::array{
         LinkButton{
@@ -358,7 +367,8 @@ bool SyncPopup::init() {
                     "OK",
                     [](auto, bool ok) {
                         if (ok) web::openLinkInBrowser("https://www.dsc.gg/cheeseworks");
-                    });
+                    }
+                );
             },
         },
         LinkButton{
@@ -373,44 +383,36 @@ bool SyncPopup::init() {
     for (auto& linkBtn : linkBtns) {
         auto b = Button::createWithSpriteFrameName(
             linkBtn.sprite,
-            std::move(linkBtn.callback));
+            std::move(linkBtn.callback)
+        );
         b->setID(std::move(linkBtn.id));
-        b->setScale(0.75f);
+        b->setScale(0.825f);
 
         linkBtnMenu->addChild(b);
     };
 
     linkBtnMenu->updateLayout();
 
-    auto infoBtn = Button::createWithSpriteFrameName(
-        "GJ_infoIcon_001.png",
-        [](auto) {
-            createQuickPopup(
-                "Help",
-                "This is the <cg>Ferry Sync Menu</c>. You can <cy>upload and download your game settings data</c> here, which is linked to <cg>your Geometry Dash account</c>.",
-                "OK",
-                nullptr,
-                nullptr);
-        });
-    infoBtn->setID("info-btn");
-    infoBtn->setScale(0.75f);
-    infoBtn->setZOrder(9);
-
-    m_mainLayer->addChildAtPosition(infoBtn, Anchor::TopRight, {-15.f, -15.f});
+    cw::ui::nodes::addHelpButton(
+        m_buttonMenu,
+        "This is the <cg>Ferry Sync Menu</c>. You can <cy>upload and download your game settings data</c> here, which is linked to <cg>your Geometry Dash account</c>."
+    );
 
     auto settingsBtn = Button::createWithNode(
         CircleButtonSprite::createWithSpriteFrameName(
-            "geode.loader/settings.png"),
+            "geode.loader/settings.png"
+        ),
         [](auto) {
             openSettingsPopup(Mod::get());
-        });
+        }
+    );
     settingsBtn->setID("mod-settings-btn");
     settingsBtn->setScale(0.625f);
 
     m_mainLayer->addChildAtPosition(settingsBtn, Anchor::BottomRight);
 
     return true;
-};
+}
 
 asp::SmallVec<SyncType, 4> SyncPopup::getSyncTypes() const {
     auto toSync = m_toSync.lock();
@@ -419,7 +421,7 @@ asp::SmallVec<SyncType, 4> SyncPopup::getSyncTypes() const {
     for (auto const& type : *toSync | std::views::values) out.push_back(type);
 
     return out;
-};
+}
 
 arc::Future<Result<>> SyncPopup::runTaskForIndex(uint8_t i, bool upload) {
     switch (static_cast<SyncType>(i)) {
@@ -429,7 +431,7 @@ arc::Future<Result<>> SyncPopup::runTaskForIndex(uint8_t i, bool upload) {
         case SyncType::GeodeSettings: co_return co_await (upload ? startGeodeUploadTask() : startGeodeDownloadTask());
         case SyncType::ModSettings: co_return co_await (upload ? startModUploadTask() : startModDownloadTask());
     };
-};
+}
 
 arc::Future<Result<>> SyncPopup::runUploadTasks() {
     auto toSync = m_toSync.lock();
@@ -438,7 +440,7 @@ arc::Future<Result<>> SyncPopup::runUploadTasks() {
     };
 
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::runDownloadTasks() {
     auto toSync = m_toSync.lock();
@@ -447,7 +449,7 @@ arc::Future<Result<>> SyncPopup::runDownloadTasks() {
     };
 
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startGVUploadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading game settings data..."); });
@@ -456,7 +458,7 @@ arc::Future<Result<>> SyncPopup::startGVUploadTask() {
     if (res.isErr()) co_return Err(res.getError());
 
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startGVDownloadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading game settings data..."); });
@@ -467,7 +469,7 @@ arc::Future<Result<>> SyncPopup::startGVDownloadTask() {
 
     save::applyGameVars(res);
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading Geode settings data..."); });
@@ -476,7 +478,7 @@ arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
     if (res.isErr()) co_return Err(res.getError());
 
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading Geode settings data..."); });
@@ -487,7 +489,7 @@ arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
 
     save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, res));
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startModUploadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading mod settings data..."); });
@@ -496,7 +498,7 @@ arc::Future<Result<>> SyncPopup::startModUploadTask() {
     if (res.isErr()) co_return Err(res.getError());
 
     co_return Ok();
-};
+}
 
 arc::Future<Result<>> SyncPopup::startModDownloadTask() {
     co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading mod settings data..."); });
@@ -510,7 +512,7 @@ arc::Future<Result<>> SyncPopup::startModDownloadTask() {
     };
 
     co_return Ok();
-};
+}
 
 void SyncPopup::onClosePopup(UploadActionPopup* popup) {
     if (!popup->m_succeeded) {
@@ -521,7 +523,7 @@ void SyncPopup::onClosePopup(UploadActionPopup* popup) {
 
     impl::resetNode(m_progressPopup);
     m_inProgress = false;
-};
+}
 
 void SyncPopup::onExit() {
     m_tasks.cancel();
@@ -529,7 +531,7 @@ void SyncPopup::onExit() {
     impl::resetNode(m_progressPopup);
 
     Popup::onExit();
-};
+}
 
 SyncPopup* SyncPopup::create() {
     auto ret = new SyncPopup();
@@ -540,4 +542,4 @@ SyncPopup* SyncPopup::create() {
 
     delete ret;
     return nullptr;
-};
+}

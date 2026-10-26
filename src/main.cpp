@@ -16,7 +16,7 @@ namespace cw::ferry {
 
         static void toggleHooks(bool on) {
             for (auto& hook : g_hooks) (void)hook->toggle(on);
-        };
+        }
 
         static void setupHooks(auto& self, std::string_view settingID) {
             StringMap<std::shared_ptr<Hook>> const& hooks = self.m_hooks;
@@ -28,7 +28,7 @@ namespace cw::ferry {
 
                 g_hooks.push_back(hook);
             };
-        };
+        }
     };
 };
 
@@ -48,13 +48,14 @@ $on_game(Loaded) {
         "menu-btn",
         [](bool value) {
             main::toggleHooks(value);
-        });
-};
+        }
+    );
+}
 
 class $modify(FerryMenuLayer, MenuLayer) {
     static void onModify(auto& self) {
         main::setupHooks(self, "menu-btn");
-    };
+    }
 
     bool init() {
         if (!MenuLayer::init()) return false;
@@ -65,7 +66,8 @@ class $modify(FerryMenuLayer, MenuLayer) {
                     "icon.png"_spr,
                     0.95f,
                     CircleBaseColor::Green,
-                    CircleBaseSize::MediumAlt),
+                    CircleBaseSize::MediumAlt
+                ),
                 [](auto) {
                     if (!argon::signedIn()) {
                         AccountLayer::create()->showLayer(GameManager::sharedState()->getGameVariable(GameVar::FastMenu));
@@ -75,7 +77,8 @@ class $modify(FerryMenuLayer, MenuLayer) {
                     };
 
                     SyncPopup::create()->show();
-                });
+                }
+            );
             btn->setID("ferry-btn"_spr);
 
             menu->addChild(btn);
@@ -83,7 +86,7 @@ class $modify(FerryMenuLayer, MenuLayer) {
         };
 
         return true;
-    };
+    }
 };
 
 class $modify(FerryAccountLayer, AccountLayer) {
@@ -111,7 +114,7 @@ class $modify(FerryAccountLayer, AccountLayer) {
         };
 
         AccountLayer::FLAlert_Clicked(layer, btn2);
-    };
+    }
 
     arc::Future<Result<>> upload() {
         if (Mod::get()->getSettingValue<bool>("auto-gamevars")) {
@@ -136,7 +139,7 @@ class $modify(FerryAccountLayer, AccountLayer) {
         };
 
         co_return Ok();
-    };
+    }
 
     arc::Future<Result<>> download() {
         if (Mod::get()->getSettingValue<bool>("auto-gamevars")) {
@@ -166,5 +169,5 @@ class $modify(FerryAccountLayer, AccountLayer) {
         };
 
         co_return Ok();
-    };
+    }
 };

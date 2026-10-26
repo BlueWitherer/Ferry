@@ -1,23 +1,24 @@
-# for our beloved clangd users
 BasedOnStyle: Google
 
 NamespaceIndentation: All
 CommentPragmas: "^"
 FixNamespaceComments: false
 
-SortIncludes: false
+SortIncludes:
+  Enabled: false
 IncludeBlocks: Preserve
 
 IndentAccessModifiers: false
 
+AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
-BinPackParameters: false
+BinPackParameters: BinPack
 
 BreakConstructorInitializers: AfterColon
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
 
-AllowShortIfStatementsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: OnlyFirstIf
 AllowShortCaseLabelsOnASingleLine: true
 
 IndentWidth: 4
@@ -27,8 +28,9 @@ AccessModifierOffset: -4
 BreakBeforeBraces: Attach
 PointerAlignment: Left
 
-AlignAfterOpenBracket: DontAlign
-
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
+
+Cpp11BracedListStyle: Block
+RemoveSemicolon: true

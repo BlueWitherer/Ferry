@@ -29,4 +29,4 @@ setup_geode_mod(${PROJECT_NAME})
 
 CPMAddPackage("gh:dankmeme01/dbuf@1.1.0")
 CPMAddPackage("gh:BlueWitherer/rhatts-geode-sillies#main")
-target_link_libraries(${PROJECT_NAME} dbuf argon rhatt)
+target_link_libraries(${PROJECT_NAME} dbuf rhatt)

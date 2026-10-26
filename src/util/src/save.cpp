@@ -12,12 +12,12 @@ using namespace cw::ferry;
 namespace cw::ferry {
     namespace impl {
         static auto toBytes(std::string_view str) {
-            return ByteVector{str.begin(), str.end()};
-        };
+            return ByteVector{ str.begin(), str.end() };
+        }
 
         static auto fromBytes(ByteSpan data) {
-            return std::string{data.begin(), data.end()};
-        };
+            return std::string{ data.begin(), data.end() };
+        }
 
         namespace data {
             arc::Future<cw::WebRes> uploadSettings(ZStringView endpoint, matjson::Value const& data) {
@@ -26,17 +26,18 @@ namespace cw::ferry {
                 auto const settings = save::geode::filterSettings(CW_GEODE_ID, data);
 
                 auto res = co_await request::setBytes(
-                    cw::request::withAuth(std::move(token)),
-                    impl::toBytes(settings.dump(matjson::NO_INDENTATION)))
+                               request::withAuth(std::move(token)),
+                               impl::toBytes(settings.dump(matjson::NO_INDENTATION))
+                )
                                .post(endpoint);
 
                 co_return cw::request::parse(res);
-            };
+            }
 
             arc::Future<Result<matjson::Value>> downloadSettings(ZStringView endpoint) {
                 GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
 
-                auto res = co_await (co_await cw::request::withAuthCo(std::move(token)))
+                auto res = co_await (co_await request::withAuthCo(std::move(token)))
                                .get(endpoint);
 
                 if (res.error()) {
@@ -46,7 +47,7 @@ namespace cw::ferry {
 
                 GEODE_CO_UNWRAP_INTO(auto json, matjson::Value::parse(impl::fromBytes(res.data())));
                 co_return Ok(std::move(json));
-            };
+            }
         };
     };
 };
@@ -84,25 +85,26 @@ arc::Future<cw::WebRes> save::uploadGameVars() {
     };
 
     auto res = co_await request::setBytes(
-        (co_await cw::request::withAuthCo(std::move(token))),
-        bw.writtenVec())
-                   .post("/v1/upload"_api);
+                   (co_await request::withAuthCo(std::move(token))),
+                   bw.writtenVec()
+    )
+                   .post("/v2/upload"_api);
 
     co_return cw::request::parse(res);
-};
+}
 
 arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
     GEODE_CO_UNWRAP_INTO(auto token, co_await argon::startAuth());
 
-    auto res = co_await (co_await cw::request::withAuthCo(std::move(token)))
-                   .get("/v1/download"_api);
+    auto res = co_await (co_await request::withAuthCo(std::move(token)))
+                   .get("/v2/download"_api);
 
     if (res.error()) {
         auto const webResp = cw::request::parse(res);
         co_return Err("{}: {}", webResp.getCode(), webResp.getError());
     };
 
-    dbuf::ByteReader br{res.data()};
+    dbuf::ByteReader br{ res.data() };
 
     GEODE_CO_UNWRAP_INTO(size_t size, br.readU64());
 
@@ -120,7 +122,7 @@ arc::Future<Result<StringMap<bool>>> save::downloadGameVars() {
     };
 
     co_return Ok(std::move(vars));
-};
+}
 
 void save::applyGameVars(StringMap<bool> const& vars) {
     auto gm = GameManager::sharedState();
@@ -132,19 +134,19 @@ void save::applyGameVars(StringMap<bool> const& vars) {
 
         gm->setGameVariable(key.c_str(), val);
     };
-};
+}
 
 arc::Future<cw::WebRes> save::geode::uploadSettings() {
-    co_return co_await impl::data::uploadSettings("/v1/upload-geode"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::getSettings(CW_GEODE_ID)));
-};
+    co_return co_await impl::data::uploadSettings("/v2/upload/geode"_api, save::geode::filterSettings(CW_GEODE_ID, save::geode::getSettings(CW_GEODE_ID)));
+}
 
 arc::Future<Result<matjson::Value>> save::geode::downloadSettings() {
-    co_return co_await impl::data::downloadSettings("/v1/download-geode"_api);
-};
+    co_return co_await impl::data::downloadSettings("/v2/download/geode"_api);
+}
 
 void save::geode::applySettings(std::string_view modID, matjson::Value const& data) {
     return applySettings(Loader::get()->getInstalledMod(modID), data);
-};
+}
 
 void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
     auto const prev = mod->getSavedSettingsData();
@@ -162,11 +164,11 @@ void save::geode::applySettings(Mod* mod, matjson::Value const& data) {
             SettingChangedEvent(mod->getID(), key).send(mod->getSetting(key));
         });
     };
-};
+}
 
 matjson::Value save::geode::filterSettings(std::string_view modID, matjson::Value const& data) {
     return filterSettings(Loader::get()->getInstalledMod(modID), data);
-};
+}
 
 matjson::Value save::geode::filterSettings(Mod* mod, matjson::Value const& data) {
     matjson::Value out;
@@ -177,36 +179,37 @@ matjson::Value save::geode::filterSettings(Mod* mod, matjson::Value const& data)
     };
 
     return out;
-};
+}
 
 matjson::Value& save::geode::getSettings(std::string_view modID) {
     return getSettings(Loader::get()->getInstalledMod(modID));
-};
+}
 
 matjson::Value& save::geode::getSettings(Mod* mod) {
     auto msm = ModSettingsManager::from(mod);
 
     (void)msm->save();
     return msm->getSaveData();
-};
+}
 
 arc::Future<cw::WebRes> save::geode::mods::uploadSettings() {
-    auto res = co_await impl::data::uploadSettings("/v1/upload-geode-mods"_api, save::geode::mods::getAllSettings());
+    auto res = co_await impl::data::uploadSettings("/v2/upload/mods"_api, save::geode::mods::getAllSettings());
     if (res.getCode() == 413) co_await async::waitForMainThread([]() {
         createQuickPopup(
             "Uh oh!",
             "Looks like your mod settings data is <cr>too large</c> to upload to <cf>Ferry's cloud</c>. Try <cy>uninstalling some mods</c> and try again.",
             "OK",
             nullptr,
-            nullptr);
+            nullptr
+        );
     });
 
     co_return res;
-};
+}
 
 arc::Future<::geode::Result<matjson::Value>> save::geode::mods::downloadSettings() {
-    co_return co_await impl::data::downloadSettings("/v1/download-geode-mods"_api);
-};
+    co_return co_await impl::data::downloadSettings("/v2/download/mods"_api);
+}
 
 matjson::Value save::geode::mods::getAllSettings() {
     matjson::Value out;
@@ -219,4 +222,4 @@ matjson::Value save::geode::mods::getAllSettings() {
     };
 
     return out;
-};
+}
