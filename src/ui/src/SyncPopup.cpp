@@ -162,7 +162,7 @@ bool SyncPopup::init() {
                             impl::removeOptionsLayer();
                             impl::resetNode(m_progressPopup);
 
-                            m_progressPopup = UploadActionPopup::create(this, "Preparing upload...");
+                            m_progressPopup = ProcessPopup::create("Preparing upload...");
                             m_progressPopup->show();
 
                             m_tasks.spawn(
@@ -172,9 +172,9 @@ bool SyncPopup::init() {
 
                                     if (res.isErr()) {
                                         log::error("Upload(s) failed: {}", res.unwrapErr());
-                                        m_progressPopup->showFailMessage("An error occurred");
+                                        m_progressPopup->setFailure("An error occurred");
                                     } else {
-                                        m_progressPopup->showSuccessMessage("Sync complete!");
+                                        m_progressPopup->setSuccess("Sync complete!");
                                     };
                                 }
                             );
@@ -204,7 +204,17 @@ bool SyncPopup::init() {
                             impl::removeOptionsLayer();
                             impl::resetNode(m_progressPopup);
 
-                            m_progressPopup = UploadActionPopup::create(this, "Preparing download...");
+                            m_progressPopup = ProcessPopup::create("Preparing download...");
+                            m_progressPopup->setCloseCallback([this](ProcessPopup* self, ProcessPopup::State state) {
+                                if (state != ProcessPopup::State::Success) {
+                                    m_tasks.cancel();
+
+                                    if (m_inProgress) Notification::create("Task cancelled", NotificationIcon::Error)->show();
+                                };
+
+                                impl::resetNode(m_progressPopup);
+                                m_inProgress = false;
+                            });
                             m_progressPopup->show();
 
                             m_tasks.spawn(
@@ -214,9 +224,9 @@ bool SyncPopup::init() {
 
                                     if (res.isErr()) {
                                         log::error("Download(s) failed: {}", res.unwrapErr());
-                                        m_progressPopup->showFailMessage("An error occurred");
+                                        m_progressPopup->setFailure("An error occurred");
                                     } else {
-                                        m_progressPopup->showSuccessMessage("Sync complete!");
+                                        m_progressPopup->setSuccess("Sync complete!");
                                     };
                                 }
                             );
@@ -452,7 +462,7 @@ arc::Future<Result<>> SyncPopup::runDownloadTasks() {
 }
 
 arc::Future<Result<>> SyncPopup::startGVUploadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading game settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Uploading game settings data..."); });
 
     auto const res = co_await save::uploadGameVars();
     if (res.isErr()) co_return Err(res.getError());
@@ -461,18 +471,18 @@ arc::Future<Result<>> SyncPopup::startGVUploadTask() {
 }
 
 arc::Future<Result<>> SyncPopup::startGVDownloadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading game settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Downloading game settings data..."); });
 
     GEODE_CO_UNWRAP_INTO(auto const res, co_await save::downloadGameVars());
 
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying game settings..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Applying game settings..."); });
 
     save::applyGameVars(res);
     co_return Ok();
 }
 
 arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading Geode settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Uploading Geode settings data..."); });
 
     auto const res = co_await save::geode::uploadSettings();
     if (res.isErr()) co_return Err(res.getError());
@@ -481,18 +491,18 @@ arc::Future<Result<>> SyncPopup::startGeodeUploadTask() {
 }
 
 arc::Future<Result<>> SyncPopup::startGeodeDownloadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading Geode settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Downloading Geode settings data..."); });
 
     GEODE_CO_UNWRAP_INTO(auto const res, co_await save::geode::downloadSettings());
 
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying Geode settings..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Applying Geode settings..."); });
 
     save::geode::applySettings(CW_GEODE_ID, save::geode::filterSettings(CW_GEODE_ID, res));
     co_return Ok();
 }
 
 arc::Future<Result<>> SyncPopup::startModUploadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Uploading mod settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Uploading mod settings data..."); });
 
     auto const res = co_await save::geode::mods::uploadSettings();
     if (res.isErr()) co_return Err(res.getError());
@@ -501,28 +511,17 @@ arc::Future<Result<>> SyncPopup::startModUploadTask() {
 }
 
 arc::Future<Result<>> SyncPopup::startModDownloadTask() {
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Downloading mod settings data..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Downloading mod settings data..."); });
 
     GEODE_CO_UNWRAP_INTO(auto const res, co_await save::geode::mods::downloadSettings());
 
-    co_await async::waitForMainThread([this]() { m_progressPopup->m_textArea->setString("Applying mod settings..."); });
+    co_await async::waitForMainThread([this]() { m_progressPopup->updateMessage("Applying mod settings..."); });
 
     for (auto const& [modID, data] : res) {
         if (Loader::get()->isModInstalled(modID)) save::geode::applySettings(modID, save::geode::filterSettings(modID, data));
     };
 
     co_return Ok();
-}
-
-void SyncPopup::onClosePopup(UploadActionPopup* popup) {
-    if (!popup->m_succeeded) {
-        m_tasks.cancel();
-
-        if (m_inProgress) Notification::create("Task cancelled", NotificationIcon::Error)->show();
-    };
-
-    impl::resetNode(m_progressPopup);
-    m_inProgress = false;
 }
 
 void SyncPopup::onExit() {

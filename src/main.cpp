@@ -91,27 +91,27 @@ class $modify(FerryMenuLayer, MenuLayer) {
 
 class $modify(FerryAccountLayer, AccountLayer) {
     void FLAlert_Clicked(FLAlertLayer* layer, bool btn2) {
-        switch (layer->getTag()) {
-            default: break;
+        if (btn2) switch (layer->getTag()) {
+                default: break;
 
-            case 1: {  // save
-                if (Mod::get()->getSettingValue<bool>("also-upload")) async::spawn(upload(), [](Result<> res) {
-                    if (res.isOk()) return Notification::create("(Ferry) Save complete!", NotificationIcon::Success)->show();
+                case 1: {  // save
+                    if (Mod::get()->getSettingValue<bool>("also-upload")) async::spawn(upload(), [](Result<> res) {
+                        if (res.isOk()) return Notification::create("(Ferry) Save complete!", NotificationIcon::Success)->show();
 
-                    log::error("Failed to upload data: {}", res.unwrapErr());
-                    Notification::create("(Ferry) Save failed", NotificationIcon::Error)->show();
-                });
-            } break;
+                        log::error("Failed to upload data: {}", res.unwrapErr());
+                        Notification::create("(Ferry) Save failed", NotificationIcon::Error)->show();
+                    });
+                } break;
 
-            case 2: {  // load
-                if (Mod::get()->getSettingValue<bool>("also-download")) async::spawn(download(), [](Result<> res) {
-                    if (res.isOk()) return Notification::create("(Ferry) Load complete!", NotificationIcon::Success)->show();
+                case 2: {  // load
+                    if (Mod::get()->getSettingValue<bool>("also-download")) async::spawn(download(), [](Result<> res) {
+                        if (res.isOk()) return Notification::create("(Ferry) Load complete!", NotificationIcon::Success)->show();
 
-                    log::error("Failed to download data: {}", res.unwrapErr());
-                    Notification::create("(Ferry) Load failed", NotificationIcon::Error)->show();
-                });
-            } break;
-        };
+                        log::error("Failed to download data: {}", res.unwrapErr());
+                        Notification::create("(Ferry) Load failed", NotificationIcon::Error)->show();
+                    });
+                } break;
+            };
 
         AccountLayer::FLAlert_Clicked(layer, btn2);
     }

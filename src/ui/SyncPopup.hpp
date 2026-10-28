@@ -13,24 +13,24 @@ namespace cw::ferry {
     };
 
     namespace ui {
-        class SyncPopup final : public geode::Popup, public UploadPopupDelegate {
+        class SyncPopup final : public geode::Popup {
             struct SaveButtonData final {
                 std::string id;
                 std::string text;
                 std::string icon;
                 std::string background;
-                geode::Button::ButtonCallback callback;
+                geode::Button::ButtonCallback callback = nullptr;
             };
 
             struct LinkButton final {
                 std::string id;
                 std::string sprite;
-                geode::Button::ButtonCallback callback;
+                geode::Button::ButtonCallback callback = nullptr;
             };
 
         private:
             std::atomic<bool> m_inProgress = false;
-            geode::Ref<UploadActionPopup> m_progressPopup = nullptr;
+            geode::Ref<geode::ProcessPopup> m_progressPopup = nullptr;
 
             geode::async::TaskHolder<geode::Result<>> m_tasks;
 
@@ -52,8 +52,6 @@ namespace cw::ferry {
         protected:
             arc::Future<geode::Result<>> runUploadTasks();
             arc::Future<geode::Result<>> runDownloadTasks();
-
-            void onClosePopup(UploadActionPopup* popup) override;
 
             void onExit() override;
 
